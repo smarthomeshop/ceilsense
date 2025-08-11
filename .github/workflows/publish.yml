@@ -34,6 +34,12 @@ jobs:
           python-version: '3.11'
       - name: Install ESPHome
         run: pip install esphome==2024.6.6
+      - name: Create dummy secrets for build
+        run: |
+          mkdir -p ceilsense-v1
+          printf "wifi_ssid: "DUMMY"
+wifi_password: "DUMMYPASS"
+" > ceilsense-v1/secrets.yaml
       - name: Validate ${{ matrix.file }}
         run: esphome config ${{ matrix.file }}
       - name: Build ${{ matrix.file }}
