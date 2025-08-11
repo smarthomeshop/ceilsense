@@ -1,0 +1,163 @@
+# CeilSense v1 - shared base for all variants
+
+substitutions:
+  require_scd4x: "false"
+  require_ld2412: "false"
+
+esphome:
+  name_add_mac_suffix: true
+  project:
+    name: ceilsense.ceilsense
+    version: "1.0.0-beta"
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+logger:
+api:
+ota:
+
+# Globals
+globals:
+  - id: startup_phase
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: startup_failed
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: dbg_last_dist_m
+    type: float
+    restore_value: no
+    initial_value: "0.0"
+  - id: dbg_smooth_dist_m
+    type: float
+    restore_value: no
+    initial_value: "0.0"
+  - id: dbg_last_leds
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+# Optional components toggled by substitutions
+
+# Sensors (optional SCD4x)
+sensor:
+
+# UART en LD2412 worden in varianten met LD2412 via package toegevoegd
+
+light:
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: GPIO20
+    num_leds: 16
+    chipset: ws2812
+    id: status_led
+    name: "ESP32 RMT Light 1"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    effects:
+      - addressable_lambda:
+          name: "Circulair Laad Effect"
+          update_interval: 100ms
+          lambda: |-
+            static int pos = 0;
+            const int tail_length = 2;
+            const float brightness_step = 1.0 / (tail_length + 1);
+            it.all() = esphome::Color(0, 0, 0);
+            esphome::Color headColor(0, 0, 255);
+            switch (id(startup_phase)) {
+              case 1: headColor = esphome::Color(0, 255, 255); break;
+              case 2: headColor = esphome::Color(255, 0, 255); break;
+              case 3: headColor = esphome::Color(0, 255, 0); break;
+              case 4: headColor = esphome::Color(255, 128, 0); break;
+              default: headColor = esphome::Color(0, 0, 255); break;
+            }
+            it[pos] = headColor;
+            for (int i = 1; i <= tail_length; i++) {
+              float brightness = 1.0 - (i * brightness_step);
+              int index = (pos - i + it.size()) % it.size();
+              auto color = headColor;
+              color.red = static_cast<uint8_t>(color.red * brightness);
+              color.green = static_cast<uint8_t>(color.green * brightness);
+              color.blue = static_cast<uint8_t>(color.blue * brightness);
+              it[index] = color;
+            }
+            pos = (pos + 1) % it.size();
+
+web_server:
+  port: 80
+
+# Update entity placeholder (can be wired to your manifest later)
+http_request:
+  useragent: ceilsense-esphome
+update:
+  - platform: http_request
+    name: CeilSense Firmware
+    source: https://example.com/manifest.json
+    disabled_by_default: true
+
+# I2C + sensors
+i2c:
+  sda: GPIO11
+  scl: GPIO10
+  scan: true
+  id: bus_a
+
+sensor:
+  - platform: internal_temperature
+    name: "CPU Temperature"
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    id: illuminance
+    address: 0x23
+    update_interval: 60s
+  - platform: bmp3xx_i2c
+    temperature:
+      name: "BMP3xx Temperature"
+    pressure:
+      name: "BMP3xx Pressure"
+      id: bmp_pressure
+    address: 0x76
+    update_interval: 60s
+
+# Buttons & switches
+switch:
+  - platform: template
+    name: "LD2412 Debug Modus"
+    id: debug_mode
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Bluetooth na boot uitschakelen"
+    id: ble_disable_after_boot
+    icon: mdi:bluetooth-off
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+button:
+  - platform: restart
+    name: "Apparaat herstarten"
+    id: btn_restart
+  - platform: factory_reset
+    id: factory_reset_button
+    name: "Factory Reset"
+    entity_category: config
+    disabled_by_default: true
+
+# Text sensors
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: "ESP Reset Reason"
+      icon: mdi:anchor
+      disabled_by_default: True
+
+# Script placeholder
+script:
+  - id: play_stream
+    then:
+      - delay: 10ms

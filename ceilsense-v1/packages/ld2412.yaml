@@ -1,0 +1,83 @@
+# LD2412 package (UART + component)
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO18
+  rx_pin: GPIO17
+  baud_rate: 115200
+
+ld2412:
+  id: ld2412s_radar
+  uart_id: uart_bus
+
+text_sensor:
+  - platform: ld2412
+    version:
+      name: LD2412S FM Version
+      id: ld2412_fm_version
+    mac_address:
+      name: LD2412S Mac
+      id: ld2412_mac
+
+binary_sensor:
+  - platform: ld2412
+    has_target:
+      name: Presence
+      id: presence
+      on_press:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 70%
+                  effect: "LD2412 Debug Distance"
+      on_release:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_off: status_led
+    has_moving_target:
+      name: Moving Target
+      id: moving_target
+    has_still_target:
+      name: Still Target
+      id: still_target
+
+sensor:
+  - platform: ld2412
+    moving_distance:
+      name : Moving Distance
+      id: moving_distance
+    still_distance:
+      name: Still Distance
+      id: still_distance
+    moving_energy:
+      name: Move Energy
+    still_energy:
+      name: Still Energy
+    luminance:
+      name: LD2412 luminance
+      entity_category: diagnostic
+
+# Zelftest fase 2: LD2412
+esphome:
+  on_boot:
+    - priority: 580
+      then:
+        - lambda: |-
+            id(startup_phase) = 2;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state();
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(ld2412_fm_version).has_state();
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;

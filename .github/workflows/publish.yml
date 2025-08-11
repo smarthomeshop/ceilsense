@@ -1,0 +1,50 @@
+name: Build and Publish CeilSense firmware
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.yaml'
+
+jobs:
+  # Matrix build voor 8 varianten
+  build-matrix:
+    name: Build all variants
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file:
+          - ceilsense-v1/ceilsense-basic-wifi.yaml
+          - ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml
+          - ceilsense-v1/ceilsense-basic-eth.yaml
+          - ceilsense-v1/ceilsense-basic-eth-ld2412.yaml
+          - ceilsense-v1/ceilsense-complete-wifi.yaml
+          - ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml
+          - ceilsense-v1/ceilsense-complete-eth.yaml
+          - ceilsense-v1/ceilsense-complete-eth-ld2412.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install ESPHome
+        run: pip install esphome==2024.6.6
+      - name: Validate ${{ matrix.file }}
+        run: esphome config ${{ matrix.file }}
+      - name: Build ${{ matrix.file }}
+        run: esphome compile ${{ matrix.file }}
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.file }}-firmware
+          path: |
+            .esphome/build/**/firmware*.bin
+            .esphome/build/**/firmware*.json
+
+  # Publiceer manifests & website-artefacten (optioneel: GitHub Pages)
+  # Voorbeeld commit naar gh-pages kan later worden toegevoegd

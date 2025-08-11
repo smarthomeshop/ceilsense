@@ -1,0 +1,50 @@
+# WiFi mixin for variants
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "CeilSense"
+    password: "ceilsense"
+
+captive_portal:
+
+# Improv BLE + Serial (for provisioning)
+esp32_improv:
+  authorizer: none
+improv_serial:
+
+# BLE auto-disable switch optional (user can add)
+
+esphome:
+  on_boot:
+    - priority: 600
+      then:
+        - lambda: |-
+            id(startup_phase) = 1;
+        - light.turn_on:
+            id: status_led
+            brightness: 80%
+            effect: "Circulair Laad Effect"
+        - wait_until:
+            condition:
+              wifi.connected:
+            timeout: 30s
+        - if:
+            condition:
+              not:
+                wifi.connected:
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - if:
+            condition:
+              wifi.connected:
+            then:
+              - script.execute: play_stream
+              - if:
+                  condition:
+                    switch.is_on: ble_disable_after_boot
+                  then:
+                    - ble.disable:
+        # Zelftest fases 3..5 in base via sensoren (SCD4x/BH1750/BMP3xx)
+        - light.turn_off: status_led

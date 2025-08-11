@@ -1,0 +1,14 @@
+# Complete WiFi + LD2412 required (SCD4x required)
+substitutions:
+  require_scd4x: "true"
+  require_ld2412: "true"
+
+esphome:
+  name: ceilsense-complete-wifi-ld2412
+  friendly_name: CeilSense v1 Complete (WiFi + LD2412)
+
+packages:
+  base: !include base.yaml
+  net: !include wifi.yaml
+  ld2412: !include packages/ld2412.yaml
+  scd4x: !include packages/scd4x.yaml
