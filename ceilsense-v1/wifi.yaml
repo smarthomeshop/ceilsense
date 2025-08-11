@@ -2,6 +2,9 @@
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  fast_connect: ${wifi_fast_connect}
+  # optioneel: sneller verbinden op vast kanaal
+  # output power, b/g/n tuning etc. kan hier ook
   ap:
     ssid: "CeilSense"
     password: "ceilsense"
@@ -12,6 +15,20 @@ captive_portal:
 esp32_improv:
   authorizer: none
 improv_serial:
+
+# Diagnostics (voor onboarding-URL params)
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ESP IP Address
+      id: wifi_ip
+      entity_category: diagnostic
+      disabled_by_default: true
+    mac_address:
+      name: ESP MAC
+      id: wifi_mac
+      entity_category: diagnostic
+      disabled_by_default: true
 
 # BLE auto-disable switch optional (user can add)
 
@@ -46,5 +63,18 @@ esphome:
                     switch.is_on: ble_disable_after_boot
                   then:
                     - ble.disable:
+              - if:
+                  condition:
+                    lambda: 'return !id(onboarding_sent);'
+                  then:
+                    - http_request.get:
+                        url: !lambda |-
+                          std::string name = esphome::App.get_name();
+                          std::string mac = id(wifi_mac).has_state() ? std::string(id(wifi_mac).state.c_str()) : esphome::get_mac_address_pretty();
+                          std::string ip = id(wifi_ip).has_state() ? std::string(id(wifi_ip).state.c_str()) : std::string("");
+                          char buf[512];
+                          snprintf(buf, sizeof(buf), "https://smarthomeshop.io/onboarding/ceilsense?name=%s&mac=%s&ip=%s&ver=%s", name.c_str(), mac.c_str(), ip.c_str(), ESPHOME_VERSION);
+                          return std::string(buf);
+                    - lambda: 'id(onboarding_sent) = true;'
         # Zelftest fases 3..5 in base via sensoren (SCD4x/BH1750/BMP3xx)
         - light.turn_off: status_led

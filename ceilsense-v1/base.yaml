@@ -1,14 +1,21 @@
 # CeilSense v1 - shared base for all variants
 
 substitutions:
-  require_scd4x: "false"
-  require_ld2412: "false"
+  wifi_fast_connect: "true"
+  name: "ceilsense"
+  friendly_name: "CeilSense"
+  project_name: "smarthomeshop.ceilsense"
+  project_version: "1.0.0-beta"
+  log_level: "INFO"
+  update_manifest_url: "https://example.com/manifest.json"
 
 esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
   name_add_mac_suffix: true
   project:
-    name: ceilsense.ceilsense
-    version: "1.0.0-beta"
+    name: ${project_name}
+    version: ${project_version}
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -16,6 +23,7 @@ esp32:
     type: esp-idf
 
 logger:
+  level: ${log_level}
 api:
 ota:
 
@@ -28,6 +36,10 @@ globals:
   - id: startup_failed
     type: bool
     restore_value: no
+    initial_value: "false"
+  - id: onboarding_sent
+    type: bool
+    restore_value: yes
     initial_value: "false"
   - id: dbg_last_dist_m
     type: float
@@ -44,9 +56,7 @@ globals:
 
 # Optional components toggled by substitutions
 
-# Sensors (optional SCD4x)
-sensor:
-
+# Sensors (optionele modules via packages)
 # UART en LD2412 worden in varianten met LD2412 via package toegevoegd
 
 light:
@@ -97,7 +107,7 @@ http_request:
 update:
   - platform: http_request
     name: CeilSense Firmware
-    source: https://example.com/manifest.json
+    source: ${update_manifest_url}
     disabled_by_default: true
 
 # I2C + sensors
