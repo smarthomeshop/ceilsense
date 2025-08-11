@@ -37,9 +37,7 @@ jobs:
       - name: Create dummy secrets for build
         run: |
           mkdir -p ceilsense-v1
-          printf "wifi_ssid: "DUMMY"
-wifi_password: "DUMMYPASS"
-" > ceilsense-v1/secrets.yaml
+          printf "wifi_ssid: \"DUMMY\"\nwifi_password: \"DUMMYPASS\"\n" > ceilsense-v1/secrets.yaml
       - name: Validate ${{ matrix.file }}
         run: esphome config ${{ matrix.file }}
       - name: Build ${{ matrix.file }}
