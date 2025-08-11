@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install ESPHome
-        run: pip install esphome==2024.6.6
+        run: pip install esphome==2025.8.0
       - name: Create dummy secrets for build
         run: |
           mkdir -p ceilsense-v1
