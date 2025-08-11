@@ -1,8 +1,4 @@
 # Complete WiFi + LD2412 required (SCD4x required)
-substitutions:
-  require_scd4x: "true"
-  require_ld2412: "true"
-
 esphome:
   name: ceilsense-complete-wifi-ld2412
   friendly_name: CeilSense v1 Complete (WiFi + LD2412)
