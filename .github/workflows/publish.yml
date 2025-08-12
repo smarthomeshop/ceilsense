@@ -48,6 +48,7 @@ jobs:
             pio-${{ runner.os }}-
       - name: Set variant name
         run: echo "VARIANT=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
+          echo "ESPHOME_FLAGS=--substitution build_variant=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
       - name: Create dummy secrets for build
         run: |
           mkdir -p ceilsense-v1
@@ -55,7 +56,7 @@ jobs:
       - name: Validate ${{ matrix.file }}
         run: esphome config ${{ matrix.file }}
       - name: Build ${{ matrix.file }}
-        run: esphome compile ${{ matrix.file }}
+        run: esphome compile ${{ env.ESPHOME_FLAGS }} ${{ matrix.file }}
       - name: Build merged firmware & manifest for ESP Web Tools
         if: success()
         run: |
@@ -97,6 +98,9 @@ jobs:
           name: ${{ env.VARIANT }}-firmware
           path: |
             .esphome/build/**/firmware*.bin
+            .esphome/build/**/factory*.bin
+            .esphome/build/**/ota*.bin
+            .esphome/build/**/*.elf
             .esphome/build/**/.pioenvs/**/firmware*.bin
             .esphome/build/**/merged-firmware.bin
             .esphome/build/**/manifest*.json

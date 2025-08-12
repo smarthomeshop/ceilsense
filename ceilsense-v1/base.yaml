@@ -8,6 +8,8 @@ substitutions:
   project_version: "1.0.0-beta"
   ceilsense_software_version: "1.0.0-beta"
   ceilsense_hardware_version: "v1"
+  # build folder variant (overridden by CI per matrix variant)
+  build_variant: "ceilsense"
   log_level: "INFO"
   update_manifest_url: "https://example.com/manifest.json"
 
@@ -18,6 +20,7 @@ esphome:
   project:
     name: ${project_name}
     version: ${project_version}
+  build_path: .esphome/build/${build_variant}
 
 esp32:
   board: esp32-s3-devkitc-1
