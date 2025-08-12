@@ -48,6 +48,7 @@ jobs:
             pio-${{ runner.os }}-
       - name: Set variant name
         run: echo "VARIANT=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
+          echo "WORKDIR=$(dirname '${{ matrix.file }}')" >> $GITHUB_ENV
           echo "ESPHOME_FLAGS=--substitution build_variant=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
       - name: Create dummy secrets for build
         run: |
@@ -91,20 +92,20 @@ jobs:
             '}' > "$OUTDIR/manifest.json"
       - name: List build outputs
         run: |
-          ls -R build || true
+          ls -R "$WORKDIR/build" || true
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.VARIANT }}-firmware
           path: |
-            build/**/firmware*.bin
-            build/**/factory*.bin
-            build/**/ota*.bin
-            build/**/*.elf
-            build/**/.pioenvs/**/firmware*.bin
-            build/**/merged-firmware.bin
-            build/**/manifest*.json
-            build/**/manifest.json
+            ${{ env.WORKDIR }}/build/**/firmware*.bin
+            ${{ env.WORKDIR }}/build/**/factory*.bin
+            ${{ env.WORKDIR }}/build/**/ota*.bin
+            ${{ env.WORKDIR }}/build/**/*.elf
+            ${{ env.WORKDIR }}/build/**/.pioenvs/**/firmware*.bin
+            ${{ env.WORKDIR }}/build/**/merged-firmware.bin
+            ${{ env.WORKDIR }}/build/**/manifest*.json
+            ${{ env.WORKDIR }}/build/**/manifest.json
 
   # Publiceer manifests & website-artefacten (optioneel: GitHub Pages)
   # Voorbeeld commit naar gh-pages kan later worden toegevoegd
