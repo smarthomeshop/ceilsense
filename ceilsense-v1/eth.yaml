@@ -18,7 +18,7 @@ esphome:
             id: status_led
             brightness: 80%
             effect: "Circulair Laad Effect"
-        # Voor Ethernet wachten we op API-verbinding ipv wifi
+        # For Ethernet, wait for API connection instead of WiFi
         - wait_until:
             condition:
               api.connected:

@@ -54,10 +54,9 @@ globals:
     restore_value: no
     initial_value: '0'
 
-# Optional components toggled by substitutions
-
-# Sensors (optionele modules via packages)
-# UART en LD2412 worden in varianten met LD2412 via package toegevoegd
+# Optional components toggled by packages
+# Sensors (optional modules via packages)
+# UART and LD2412 are added via package only in LD2412 variants
 
 light:
   - platform: esp32_rmt_led_strip
@@ -101,7 +100,7 @@ light:
 web_server:
   port: 80
 
-# Update entity placeholder (can be wired to your manifest later)
+# Update entity placeholder (point to your manifest later via substitutions)
 http_request:
   useragent: ceilsense-esphome
 update:
