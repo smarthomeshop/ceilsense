@@ -11,3 +11,7 @@ esphome:
 packages:
   base: !include base.yaml
   net: !include wifi.yaml
+
+dashboard_import:
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi.yaml@main
+  import_full_config: false
