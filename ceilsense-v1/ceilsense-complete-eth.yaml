@@ -3,6 +3,7 @@ substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
   ceilsense_hardware_version: "v1-complete-eth"
+  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-manifest.json"
 
 esphome:
   name: ${device_name}
