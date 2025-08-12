@@ -58,6 +58,12 @@ jobs:
       project-version: ${{ steps.esphome-build.outputs.project-version }}
     steps:
       - uses: actions/checkout@v4
+      - name: Create dummy secrets for build
+        shell: bash
+        run: |
+          DIR=$(dirname "${{ matrix.file }}")
+          mkdir -p "$DIR"
+          printf 'wifi_ssid: "DUMMY"\nwifi_password: "DUMMYPASS"\n' > "$DIR/secrets.yaml"
       - uses: esphome/build-action@v6
         id: esphome-build
         with:
