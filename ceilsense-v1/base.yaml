@@ -2,15 +2,17 @@
 
 substitutions:
   wifi_fast_connect: "true"
-  name: "ceilsense"
+  device_name: "ceilsense"
   friendly_name: "CeilSense"
   project_name: "smarthomeshop.ceilsense"
   project_version: "1.0.0-beta"
+  ceilsense_software_version: "1.0.0-beta"
+  ceilsense_hardware_version: "v1"
   log_level: "INFO"
   update_manifest_url: "https://example.com/manifest.json"
 
 esphome:
-  name: ${name}
+  name: ${device_name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
   project:
@@ -172,6 +174,18 @@ text_sensor:
       name: "ESP Reset Reason"
       icon: mdi:anchor
       disabled_by_default: True
+  - platform: template
+    id: ceilsense_software_version_text
+    name: "Software Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${ceilsense_software_version}"};
+  - platform: template
+    id: ceilsense_hardware_version_text
+    name: "Hardware Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${ceilsense_hardware_version}"};
 
 # Script placeholder
 script:

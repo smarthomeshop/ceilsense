@@ -1,6 +1,11 @@
+substitutions:
+  device_name: ceilsense
+  friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-basic-wifi"
+
 esphome:
-  name: ceilsense-basic-wifi
-  friendly_name: CeilSense v1 Basic (WiFi)
+  name: ${device_name}
+  friendly_name: ${friendly_name}
 
 packages:
   base: !include base.yaml

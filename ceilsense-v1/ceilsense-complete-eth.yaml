@@ -1,7 +1,12 @@
 # Complete Ethernet (SCD4x required, LD2412 optional)
+substitutions:
+  device_name: ceilsense
+  friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-complete-eth"
+
 esphome:
-  name: ceilsense-complete-eth
-  friendly_name: CeilSense v1 Complete (Ethernet)
+  name: ${device_name}
+  friendly_name: ${friendly_name}
 
 packages:
   base: !include base.yaml
