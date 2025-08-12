@@ -73,7 +73,7 @@ esphome:
                           std::string mac = id(wifi_mac).has_state() ? std::string(id(wifi_mac).state.c_str()) : esphome::get_mac_address_pretty();
                           std::string ip = id(wifi_ip).has_state() ? std::string(id(wifi_ip).state.c_str()) : std::string("");
                           char buf[512];
-                          snprintf(buf, sizeof(buf), "https://smarthomeshop.io/onboarding/ceilsense?name=%s&mac=%s&ip=%s&ver=%s", name.c_str(), mac.c_str(), ip.c_str(), ESPHOME_VERSION);
+                          snprintf(buf, sizeof(buf), "https://smarthomeshop.io/finish-onboarding/ceilsense?name=%s&mac=%s&ip=%s&ver=%s", name.c_str(), mac.c_str(), ip.c_str(), ESPHOME_VERSION);
                           return std::string(buf);
                     - lambda: 'id(onboarding_sent) = true;'
         # Self-test phases 3..5 happen in base via sensors (SCD4x/BH1750/BMP3xx)
