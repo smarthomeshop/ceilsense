@@ -37,6 +37,15 @@ jobs:
           python-version: '3.11'
       - name: Install ESPHome
         run: pip install esphome==2025.7.5
+      - name: Cache PlatformIO & pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('**/*.yaml') }}-2025.7.5
+          restore-keys: |
+            pio-${{ runner.os }}-
       - name: Set variant name
         run: echo "VARIANT=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
       - name: Create dummy secrets for build
@@ -48,16 +57,20 @@ jobs:
       - name: Build ${{ matrix.file }}
         run: esphome compile ${{ matrix.file }}
       - name: Build merged firmware & manifest for ESP Web Tools
+        if: success()
         run: |
           pip install esptool
-          # Locate build outputs
-          APP=$(find .esphome/build -name firmware.bin | head -n1)
-          BOOTLOADER=$(find .esphome/build -name bootloader.bin | head -n1)
-          PARTITIONS=$(find .esphome/build -name partitions.bin | head -n1)
-          BOOT_APP0=$(find .esphome/build -name boot_app0.bin -o -name boot.bin | head -n1)
+          # Locate build outputs (patterns vary per ESPHome release)
+          APP=$(find .esphome/build -name 'firmware*.bin' | head -n1)
+          BOOTLOADER=$(find .esphome/build -name 'bootloader.bin' | head -n1)
+          PARTITIONS=$(find .esphome/build -name 'partitions.bin' | head -n1)
+          BOOT_APP0=$(find .esphome/build -name 'boot_app0.bin' -o -name 'boot.bin' | head -n1)
+          if [ -z "$APP" ] || [ -z "$BOOTLOADER" ] || [ -z "$PARTITIONS" ] || [ -z "$BOOT_APP0" ]; then
+            echo "Build outputs not found, skipping merge."; exit 0
+          fi
           OUTDIR=.esphome/build/${VARIANT}/web
           mkdir -p "$OUTDIR"
-          esptool --chip esp32 merge_bin -o "$OUTDIR/merged-firmware.bin" \
+          esptool.py --chip esp32 merge_bin -o "$OUTDIR/merged-firmware.bin" \
             --flash_mode dio --flash_freq 40m --flash_size 4MB \
             0x1000 "$BOOTLOADER" \
             0x8000 "$PARTITIONS" \
@@ -85,6 +98,7 @@ jobs:
           path: |
             .esphome/build/**/firmware*.bin
             .esphome/build/**/.pioenvs/**/firmware*.bin
+            .esphome/build/**/merged-firmware.bin
             .esphome/build/**/manifest*.json
             .esphome/build/**/manifest.json
 
