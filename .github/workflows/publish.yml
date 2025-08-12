@@ -9,6 +9,9 @@ on:
     paths:
       - '**.yaml'
 
+permissions:
+  contents: write
+
 jobs:
   # Matrix build voor 8 varianten
   build-matrix:
@@ -47,7 +50,6 @@ jobs:
       - name: Build merged firmware & manifest for ESP Web Tools
         run: |
           pip install esptool
-          ROOT=$(pwd)
           # Locate build outputs
           APP=$(find .esphome/build -name firmware.bin | head -n1)
           BOOTLOADER=$(find .esphome/build -name bootloader.bin | head -n1)
@@ -61,20 +63,18 @@ jobs:
             0x8000 "$PARTITIONS" \
             0xe000 "$BOOT_APP0" \
             0x10000 "$APP"
-          cat > "$OUTDIR/manifest.json" <<MAN
-          {
-            "name": "CeilSense",
-            "version": "${{ env.VARIANT }}-${{ github.run_number }}",
-            "builds": [
-              {
-                "chipFamily": "ESP32-S3",
-                "parts": [
-                  { "path": "merged-firmware.bin", "offset": 0 }
-                ]
-              }
-            ]
-          }
-MAN
+          printf '%s\n' '{' \
+            '  "name": "CeilSense",' \
+            '  "version": '"\"${VARIANT}-${GITHUB_RUN_NUMBER}\""',' \
+            '  "builds": [' \
+            '    {' \
+            '      "chipFamily": "ESP32-S3",' \
+            '      "parts": [' \
+            '        { "path": "merged-firmware.bin", "offset": 0 }' \
+            '      ]' \
+            '    }' \
+            '  ]' \
+            '}' > "$OUTDIR/manifest.json"
       - name: List build outputs
         run: |
           ls -R .esphome || true
