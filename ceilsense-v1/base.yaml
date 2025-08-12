@@ -31,6 +31,10 @@ ota:
   - platform: http_request
     id: ota_http_request
 
+# Enable ESPHome debug component for debug text_sensor
+debug:
+  update_interval: 30s
+
 # Globals
 globals:
   - id: startup_phase
