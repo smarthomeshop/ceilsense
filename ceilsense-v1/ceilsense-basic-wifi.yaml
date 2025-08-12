@@ -1,7 +1,0 @@
-esphome:
-  name: ceilsense-basic-wifi
-  friendly_name: CeilSense v1 Basic (WiFi)
-
-packages:
-  base: !include base.yaml
-  net: !include wifi.yaml

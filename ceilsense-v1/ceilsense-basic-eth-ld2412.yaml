@@ -1,8 +1,0 @@
-esphome:
-  name: ceilsense-basic-eth-ld2412
-  friendly_name: CeilSense v1 Basic (Ethernet + LD2412)
-
-packages:
-  base: !include base.yaml
-  net: !include eth.yaml
-  ld2412: !include packages/ld2412.yaml

@@ -1,9 +1,0 @@
-# Complete Ethernet (SCD4x required, LD2412 optional)
-esphome:
-  name: ceilsense-complete-eth
-  friendly_name: CeilSense v1 Complete (Ethernet)
-
-packages:
-  base: !include base.yaml
-  net: !include eth.yaml
-  scd4x: !include packages/scd4x.yaml

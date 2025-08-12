@@ -1,7 +1,0 @@
-esphome:
-  name: ceilsense-basic-eth
-  friendly_name: CeilSense v1 Basic (Ethernet)
-
-packages:
-  base: !include base.yaml
-  net: !include eth.yaml
