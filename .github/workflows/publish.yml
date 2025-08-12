@@ -34,6 +34,8 @@ jobs:
           python-version: '3.11'
       - name: Install ESPHome
         run: pip install esphome==2025.7.5
+      - name: Set variant name
+        run: echo "VARIANT=$(basename '${{ matrix.file }}' .yaml)" >> $GITHUB_ENV
       - name: Create dummy secrets for build
         run: |
           mkdir -p ceilsense-v1
@@ -42,13 +44,80 @@ jobs:
         run: esphome config ${{ matrix.file }}
       - name: Build ${{ matrix.file }}
         run: esphome compile ${{ matrix.file }}
+      - name: Build merged firmware & manifest for ESP Web Tools
+        run: |
+          pip install esptool
+          ROOT=$(pwd)
+          # Locate build outputs
+          APP=$(find .esphome/build -name firmware.bin | head -n1)
+          BOOTLOADER=$(find .esphome/build -name bootloader.bin | head -n1)
+          PARTITIONS=$(find .esphome/build -name partitions.bin | head -n1)
+          BOOT_APP0=$(find .esphome/build -name boot_app0.bin -o -name boot.bin | head -n1)
+          OUTDIR=.esphome/build/${VARIANT}/web
+          mkdir -p "$OUTDIR"
+          esptool --chip esp32 merge_bin -o "$OUTDIR/merged-firmware.bin" \
+            --flash_mode dio --flash_freq 40m --flash_size 4MB \
+            0x1000 "$BOOTLOADER" \
+            0x8000 "$PARTITIONS" \
+            0xe000 "$BOOT_APP0" \
+            0x10000 "$APP"
+          cat > "$OUTDIR/manifest.json" <<MAN
+          {
+            "name": "CeilSense",
+            "version": "${{ env.VARIANT }}-${{ github.run_number }}",
+            "builds": [
+              {
+                "chipFamily": "ESP32-S3",
+                "parts": [
+                  { "path": "merged-firmware.bin", "offset": 0 }
+                ]
+              }
+            ]
+          }
+MAN
+      - name: List build outputs
+        run: |
+          ls -R .esphome || true
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.file }}-firmware
+          name: ${{ env.VARIANT }}-firmware
           path: |
             .esphome/build/**/firmware*.bin
-            .esphome/build/**/firmware*.json
+            .esphome/build/**/.pioenvs/**/firmware*.bin
+            .esphome/build/**/manifest*.json
+            .esphome/build/**/manifest.json
 
   # Publiceer manifests & website-artefacten (optioneel: GitHub Pages)
   # Voorbeeld commit naar gh-pages kan later worden toegevoegd
+
+  deploy-gh-pages:
+    name: Deploy GH Pages
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Prepare site folder
+        run: |
+          mkdir -p site/ceilsense-v1
+          for d in dist/*-firmware; do
+            [ -d "$d" ] || continue
+            variant=$(basename "$d" -firmware)
+            mkdir -p site/ceilsense-v1/"$variant"
+            # copy merged firmware and manifest if present; fallback to any firmware*.bin
+            if [ -f "$d/merged-firmware.bin" ]; then cp "$d/merged-firmware.bin" site/ceilsense-v1/"$variant"/; fi
+            if [ -f "$d/manifest.json" ]; then cp "$d/manifest.json" site/ceilsense-v1/"$variant"/; fi
+            if ls "$d"/firmware*.bin 1>/dev/null 2>&1; then cp "$d"/firmware*.bin site/ceilsense-v1/"$variant"/; fi
+          done
+      - name: Publish to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: site
+          keep_files: true
