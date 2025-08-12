@@ -26,6 +26,10 @@ logger:
   level: ${log_level}
 api:
 ota:
+  - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
 
 # Globals
 globals:
