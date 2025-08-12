@@ -69,7 +69,7 @@ jobs:
           if [ -z "$APP" ] || [ -z "$BOOTLOADER" ] || [ -z "$PARTITIONS" ] || [ -z "$BOOT_APP0" ]; then
             echo "Build outputs not found, skipping merge."; exit 0
           fi
-          OUTDIR=.esphome/build/${VARIANT}/web
+          OUTDIR=build/${VARIANT}/web
           mkdir -p "$OUTDIR"
           esptool.py --chip esp32 merge_bin -o "$OUTDIR/merged-firmware.bin" \
             --flash_mode dio --flash_freq 40m --flash_size 4MB \
@@ -91,20 +91,20 @@ jobs:
             '}' > "$OUTDIR/manifest.json"
       - name: List build outputs
         run: |
-          ls -R .esphome || true
+          ls -R build || true
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.VARIANT }}-firmware
           path: |
-            .esphome/build/**/firmware*.bin
-            .esphome/build/**/factory*.bin
-            .esphome/build/**/ota*.bin
-            .esphome/build/**/*.elf
-            .esphome/build/**/.pioenvs/**/firmware*.bin
-            .esphome/build/**/merged-firmware.bin
-            .esphome/build/**/manifest*.json
-            .esphome/build/**/manifest.json
+            build/**/firmware*.bin
+            build/**/factory*.bin
+            build/**/ota*.bin
+            build/**/*.elf
+            build/**/.pioenvs/**/firmware*.bin
+            build/**/merged-firmware.bin
+            build/**/manifest*.json
+            build/**/manifest.json
 
   # Publiceer manifests & website-artefacten (optioneel: GitHub Pages)
   # Voorbeeld commit naar gh-pages kan later worden toegevoegd

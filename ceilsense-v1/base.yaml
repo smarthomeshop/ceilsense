@@ -20,7 +20,7 @@ esphome:
   project:
     name: ${project_name}
     version: ${project_version}
-  build_path: .esphome/build/${build_variant}
+  build_path: build/${build_variant}
 
 esp32:
   board: esp32-s3-devkitc-1
