@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  # Matrix build voor 8 varianten
+  # Matrix build for 8 variants
   build-matrix:
     name: Build all variants
     runs-on: ubuntu-latest
