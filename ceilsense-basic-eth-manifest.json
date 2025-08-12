@@ -1,0 +1,21 @@
+{
+  "name": "CeilSense Basic Ethernet",
+  "version": "1.0.0-beta",
+  "home_assistant_domain": "esphome",
+  "new_install_skip_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "ota": {
+        "path": "ceilsense-basic-eth/ceilsense-esp32s3.ota.bin",
+        "md5": "493311e5b735ac72ea07d3c0d7a1fbdb"
+      },
+      "parts": [
+        {
+          "path": "ceilsense-basic-eth/ceilsense-esp32s3.factory.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
