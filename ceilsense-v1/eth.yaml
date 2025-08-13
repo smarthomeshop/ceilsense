@@ -30,4 +30,4 @@ esphome:
             then:
               - lambda: |-
                   id(startup_failed) = true;
-        - light.turn_off: status_led
+        # Final LED indication happens in base after sensor phases

@@ -8,7 +8,6 @@ substitutions:
   project_version: "1.0.0-beta"
   ceilsense_software_version: "1.0.0-beta"
   ceilsense_hardware_version: "v1"
-  # build folder variant (overridden by CI per matrix variant)
   build_variant: "ceilsense"
   log_level: "INFO"
   update_manifest_url: "https://example.com/manifest.json"
@@ -21,6 +20,69 @@ esphome:
     name: ${project_name}
     version: ${project_version}
   build_path: build/${build_variant}
+  on_boot:
+    - priority: 540
+      then:
+        # Fase 4: BH1750 lux
+        - lambda: |-
+            id(startup_phase) = 4;
+        - wait_until:
+            condition:
+              lambda: |-
+                return !isnan(id(illuminance).state);
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return isnan(id(illuminance).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        # Fase 5: BMP3xx druk
+        - lambda: |-
+            id(startup_phase) = 5;
+        - wait_until:
+            condition:
+              lambda: |-
+                return !isnan(id(bmp_pressure).state);
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return isnan(id(bmp_pressure).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        # Finale indicatie en afronden
+        - light.turn_off: status_led
+        - if:
+            condition:
+              lambda: |-
+                return !id(startup_failed);
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 100%
+                  red: 100%
+                  green: 100%
+                  blue: 100%
+                  transition_length: 1s
+              - delay: 3s
+              - light.turn_off:
+                  id: status_led
+                  transition_length: 1s
+            else:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 100%
+                  red: 100%
+                  green: 0%
+                  blue: 0%
+                  transition_length: 200ms
+              - delay: 20s
+              - light.turn_off:
+                  id: status_led
+                  transition_length: 300ms
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -29,7 +91,9 @@ esp32:
 
 logger:
   level: ${log_level}
+  
 api:
+
 ota:
   - platform: esphome
     id: ota_esphome
@@ -78,7 +142,7 @@ light:
     num_leds: 16
     chipset: ws2812
     id: status_led
-    name: "ESP32 RMT Light 1"
+    name: "CeilSense Status LED"
     restore_mode: ALWAYS_OFF
     default_transition_length: 0s
     effects:

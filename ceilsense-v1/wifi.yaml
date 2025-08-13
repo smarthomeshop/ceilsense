@@ -76,5 +76,4 @@ esphome:
                           snprintf(buf, sizeof(buf), "https://smarthomeshop.io/finish-onboarding/ceilsense?name=%s&mac=%s&ip=%s&ver=%s", name.c_str(), mac.c_str(), ip.c_str(), ESPHOME_VERSION);
                           return std::string(buf);
                     - lambda: 'id(onboarding_sent) = true;'
-        # Self-test phases 3..5 happen in base via sensors (SCD4x/BH1750/BMP3xx)
-        - light.turn_off: status_led
+        # Self-test phases 3..5 + final LED indication happen in base
