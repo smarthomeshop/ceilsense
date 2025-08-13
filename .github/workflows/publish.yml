@@ -8,6 +8,9 @@ on:
       - main
     paths:
       - '**.yaml'
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write

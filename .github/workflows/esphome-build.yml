@@ -58,6 +58,20 @@ jobs:
       project-version: ${{ steps.esphome-build.outputs.project-version }}
     steps:
       - uses: actions/checkout@v4
+      - name: Compute version and inject into base.yaml
+        shell: bash
+        run: |
+          # Determine VERSION from tag or fallback to dev-<sha>
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            SHORTSHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+            VERSION="dev-${SHORTSHA}"
+          fi
+          echo "Using VERSION=$VERSION"
+          # Update substitutions in base.yaml before build
+          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
+          sed -i "s/^\s*ceilsense_software_version: \".*\"/  ceilsense_software_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
       - name: Create dummy secrets for build
         shell: bash
         run: |
