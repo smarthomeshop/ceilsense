@@ -27,7 +27,7 @@ Complete (SCD4x required):
 
 - **I need CO₂ data**: Pick a Complete variant and ensure an SCD4x sensor is connected.
 - **I need presence detection**: Pick a variant with the `-ld2412` suffix and install the LD2412 module.
-- **Network choice**: Use WiFi variants for wireless setups; use Ethernet variants when you have wired W5500 available and want stable connectivity without WiFi.
+- **Network choice**: Use WiFi variants for wireless setups; use Ethernet variants when you have wired UTP cable and optional PoE for power.
 
 ## Notes
 
