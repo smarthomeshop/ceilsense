@@ -1,17 +1,12 @@
-# LD2412 package (UART + component)
-
-external_components:
-  - source:
-      type: git
-      url: https://github.com/smarthomeshop/ld2412
-      ref: main
-    components: [ld2412]
+# LD2412 package (UART + component via ESPHome core)
 
 uart:
   id: uart_bus
   tx_pin: GPIO18
   rx_pin: GPIO17
   baud_rate: 115200
+  parity: NONE
+  stop_bits: 1
 
 ld2412:
   id: ld2412s_radar
@@ -65,8 +60,8 @@ sensor:
       name: Move Energy
     still_energy:
       name: Still Energy
-    luminance:
-      name: LD2412 luminance
+    light:
+      name: LD2412 light
       entity_category: diagnostic
 
 # Zelftest fase 2: LD2412
@@ -79,12 +74,13 @@ esphome:
         - wait_until:
             condition:
               lambda: |-
-                return id(ld2412_fm_version).has_state();
+                return id(ld2412_fm_version).has_state() && std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
             timeout: 30s
         - if:
             condition:
               lambda: |-
-                return !id(ld2412_fm_version).has_state();
+                return !id(ld2412_fm_version).has_state() || std::string(id(ld2412_fm_version).state.c_str()) == "unknown";
             then:
               - lambda: |-
                   id(startup_failed) = true;
+        - lambda: 'id(ld2412_checked) = true;'

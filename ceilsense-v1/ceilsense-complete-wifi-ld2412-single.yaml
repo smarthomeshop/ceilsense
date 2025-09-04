@@ -1,16 +1,26 @@
-# CeilSense v1 - shared base for all variants
+# yamllint disable
+# CeilSense v1 - Complete WiFi + LD2412 (single file build)
 
 substitutions:
-  wifi_fast_connect: "true"
-  device_name: "ceilsense"
+  # Variant identifiers
+  device_name: ceilsense
   friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-complete-wifi-ld2412"
+  build_variant: "ceilsense-complete-wifi-ld2412"
+
+  # Versions (intentionally lower, so dashboard shows update to repo version)
   project_name: "smarthomeshop.ceilsense"
-  project_version: "1.0.0-beta"
-  ceilsense_software_version: "1.0.0-beta"
-  ceilsense_hardware_version: "v1"
-  build_variant: "ceilsense"
+  project_version: "0.9.0-beta"
+  ceilsense_software_version: "0.9.0-beta"
+
+  # Networking / logging
+  wifi_fast_connect: "true"
   log_level: "INFO"
-  update_manifest_url: "https://example.com/manifest.json"
+  wifi_ssid: "REPLACE_WITH_YOUR_SSID"
+  wifi_password: "REPLACE_WITH_YOUR_PASSWORD"
+
+  # OTA / update manifest for end-users
+  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2412-manifest.json"
 
 esphome:
   name: ${device_name}
@@ -21,6 +31,76 @@ esphome:
     version: ${project_version}
   build_path: build/${build_variant}
   on_boot:
+    # Fase 1: WiFi + onboarding
+    - priority: 600
+      then:
+        - lambda: |-
+            id(startup_phase) = 1;
+        - light.turn_on:
+            id: status_led
+            brightness: 80%
+            effect: "Circulair Laad Effect"
+        # Wacht tot WiFi verbonden (max 30s) om dezelfde timing als vroeger te hebben
+        - wait_until:
+            condition:
+              wifi.connected:
+            timeout: 30s
+        - if:
+            condition:
+              wifi.connected:
+            then:
+              - script.execute: play_stream
+              - if:
+                  condition:
+                    switch.is_on: ble_disable_after_boot
+                  then:
+                    - ble.disable:
+              - if:
+                  condition:
+                    lambda: 'return !id(onboarding_sent);'
+                  then:
+                    - http_request.get:
+                        url: "https://smarthomeshop.io/finish-onboarding/ceilsense"
+                    - lambda: 'id(onboarding_sent) = true;'
+    # Fase 2: LD2412 detectie
+    - priority: 580
+      then:
+        - lambda: |-
+            id(startup_phase) = 2;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() && std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(ld2412_fm_version).has_state() || std::string(id(ld2412_fm_version).state.c_str()) == "unknown";
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - lambda: 'id(ld2412_checked) = true;'
+    # Fase 3: SCD4x waarden
+    - priority: 560
+      then:
+        - lambda: |-
+            id(startup_phase) = 3;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(scd41_co2).has_state() && id(scd41_temperature).has_state() && id(scd41_humidity).has_state() &&
+                       !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
+            timeout: 45s
+        - if:
+            condition:
+              lambda: |-
+                return !id(scd41_co2).has_state() || !id(scd41_temperature).has_state() || !id(scd41_humidity).has_state() ||
+                       isnan(id(scd41_co2).state) || isnan(id(scd41_temperature).state) || isnan(id(scd41_humidity).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - lambda: 'id(scd4x_checked) = true;'
+    # Fase 4: BH1750 + Fase 5: BMP3xx + final LED
     - priority: 540
       then:
         # Fase 4: BH1750 lux
@@ -53,10 +133,11 @@ esphome:
             then:
               - lambda: |-
                   id(startup_failed) = true;
-        # Finale indicatie en afronden (wacht tot LD2412 & SCD4x checks klaar)
+        # Finale indicatie en afronden
         - wait_until:
             condition:
               lambda: |-
+                // Ga pas door als LD2412- én SCD4x-fase klaar zijn of gefaald hebben
                 return id(ld2412_checked) && id(scd4x_checked);
             timeout: 120s
         - light.turn_off: status_led
@@ -98,7 +179,7 @@ logger:
   level: ${log_level}
   baud_rate: 115200
   hardware_uart: UART0
-  
+
 api:
 
 ota:
@@ -110,6 +191,31 @@ ota:
 # Enable ESPHome debug component for debug text_sensor
 debug:
   update_interval: 30s
+
+# WiFi + captive + provisioning
+wifi:
+  ap:
+    password: "ceilsense"
+
+captive_portal:
+
+esp32_improv:
+  authorizer: none
+
+improv_serial:
+
+# HTTP client for onboarding and Update entity
+http_request:
+  useragent: ceilsense-esphome
+
+update:
+  - platform: http_request
+    name: CeilSense Firmware
+    source: ${update_manifest_url}
+    disabled_by_default: true
+
+web_server:
+  port: 80
 
 # Globals
 globals:
@@ -146,9 +252,24 @@ globals:
     restore_value: no
     initial_value: '0'
 
-# Optional components toggled by packages
-# Sensors (optional modules via packages)
-# UART and LD2412 are added via package only in LD2412 variants
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO18
+  rx_pin: GPIO17
+  baud_rate: 115200
+  parity: NONE
+  stop_bits: 1
+
+ld2412:
+  id: ld2412s_radar
+  uart_id: uart_bus
+
+i2c:
+  sda: GPIO11
+  scl: GPIO10
+  scan: true
+  id: bus_a
 
 light:
   - platform: esp32_rmt_led_strip
@@ -189,25 +310,6 @@ light:
             }
             pos = (pos + 1) % it.size();
 
-web_server:
-  port: 80
-
-# Update entity placeholder (point to your manifest later via substitutions)
-http_request:
-  useragent: ceilsense-esphome
-update:
-  - platform: http_request
-    name: CeilSense Firmware
-    source: ${update_manifest_url}
-    disabled_by_default: true
-
-# I2C + sensors
-i2c:
-  sda: GPIO11
-  scl: GPIO10
-  scan: true
-  id: bus_a
-
 sensor:
   - platform: internal_temperature
     name: "CPU Temperature"
@@ -224,8 +326,65 @@ sensor:
       id: bmp_pressure
     address: 0x76
     update_interval: 60s
+  - platform: ld2412
+    moving_distance:
+      name : Moving Distance
+      id: moving_distance
+    still_distance:
+      name: Still Distance
+      id: still_distance
+    moving_energy:
+      name: Move Energy
+    still_energy:
+      name: Still Energy
+    light:
+      name: LD2412 light
+      entity_category: diagnostic
+  - platform: scd4x
+    co2:
+      name: "SCD41 CO2"
+      id: scd41_co2
+    temperature:
+      name: "SCD41 Temperature"
+      id: scd41_temperature
+    humidity:
+      name: "SCD41 Humidity"
+      id: scd41_humidity
+      filters:
+        offset: 4
+    measurement_mode: low_power_periodic
+    update_interval: 30s
+    automatic_self_calibration: false
+    temperature_offset: 17.9
+    ambient_pressure_compensation_source: bmp_pressure
 
-# Buttons & switches
+binary_sensor:
+  - platform: ld2412
+    has_target:
+      name: Presence
+      id: presence
+      on_press:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 70%
+                  effect: "LD2412 Debug Distance"
+      on_release:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_off: status_led
+    has_moving_target:
+      name: Moving Target
+      id: moving_target
+    has_still_target:
+      name: Still Target
+      id: still_target
+
 switch:
   - platform: template
     name: "LD2412 Debug Modus"
@@ -249,13 +408,14 @@ button:
     entity_category: config
     disabled_by_default: true
 
-# Text sensors
 text_sensor:
+  # Debug
   - platform: debug
     reset_reason:
       name: "ESP Reset Reason"
       icon: mdi:anchor
       disabled_by_default: True
+  # Software/Hardware versions
   - platform: template
     id: ceilsense_software_version_text
     name: "Software Version"
@@ -268,9 +428,34 @@ text_sensor:
     update_interval: 5h
     lambda: |-
       return {"${ceilsense_hardware_version}"};
+  # WiFi diagnostics
+  - platform: wifi_info
+    ip_address:
+      name: ESP IP Address
+      id: wifi_ip
+      entity_category: diagnostic
+      disabled_by_default: true
+    mac_address:
+      name: ESP MAC
+      id: wifi_mac
+      entity_category: diagnostic
+      disabled_by_default: true
+  # LD2412 info
+  - platform: ld2412
+    version:
+      name: LD2412S FM Version
+      id: ld2412_fm_version
+    mac_address:
+      name: LD2412S Mac
+      id: ld2412_mac
 
-# Script placeholder
 script:
   - id: play_stream
     then:
       - delay: 10ms
+
+dashboard_import:
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml@main
+  import_full_config: false
+
+

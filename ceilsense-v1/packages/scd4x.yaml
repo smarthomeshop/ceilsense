@@ -28,12 +28,15 @@ esphome:
         - wait_until:
             condition:
               lambda: |-
-                return !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
+                return id(scd41_co2).has_state() && id(scd41_temperature).has_state() && id(scd41_humidity).has_state() &&
+                       !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
             timeout: 45s
         - if:
             condition:
               lambda: |-
-                return isnan(id(scd41_co2).state) || isnan(id(scd41_temperature).state) || isnan(id(scd41_humidity).state);
+                return !id(scd41_co2).has_state() || !id(scd41_temperature).has_state() || !id(scd41_humidity).has_state() ||
+                       isnan(id(scd41_co2).state) || isnan(id(scd41_temperature).state) || isnan(id(scd41_humidity).state);
             then:
               - lambda: |-
                   id(startup_failed) = true;
+        - lambda: 'id(scd4x_checked) = true;'

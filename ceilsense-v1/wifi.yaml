@@ -1,3 +1,4 @@
+# yamllint disable
 # WiFi mixin for variants
 wifi:
   ssid: !secret wifi_ssid
@@ -46,13 +47,6 @@ esphome:
             condition:
               wifi.connected:
             timeout: 30s
-        - if:
-            condition:
-              not:
-                wifi.connected:
-            then:
-              - lambda: |-
-                  id(startup_failed) = true;
         - if:
             condition:
               wifi.connected:
