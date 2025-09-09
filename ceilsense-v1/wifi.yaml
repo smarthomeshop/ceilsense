@@ -1,14 +1,16 @@
 # yamllint disable
 # WiFi mixin for variants
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  fast_connect: ${wifi_fast_connect}
-  # optional: speed up connect when SSID is hidden/fixed
-  # you may also tune output power, b/g/n modes, etc. here
+  # No WiFi credentials - device starts in AP mode for initial setup
+  # Users can configure WiFi via:
+  # - Captive Portal (connect to hotspot)
+  # - Improv Serial (via WebTools)
+  # - Improv BLE
+  # - ESPHome dashboard (after adoption)
+  
   ap:
-    ssid: "CeilSense"
-    password: "ceilsense"
+    ssid: ${device_name}
+    password: ${device_name}
 
 captive_portal:
 
