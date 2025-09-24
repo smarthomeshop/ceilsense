@@ -39,7 +39,6 @@ number:
       then:
         - lambda: |-
             id(scd4x_temp_offset_f).publish_state(x * 9.0 / 5.0);
-        - component.update: scd41_temperature
 
   - platform: template
     name: "SCD4x Extra Temperature Offset (°F)"
@@ -60,7 +59,6 @@ number:
             id: scd4x_temp_offset
             value: !lambda |-
               return (x * 5.0 / 9.0);
-        - component.update: scd41_temperature
 
   - platform: template
     name: "SCD4x Humidity Offset (%)"
@@ -75,9 +73,6 @@ number:
     step: 0.1
     unit_of_measurement: "%"
     mode: box
-    on_value:
-      then:
-        - component.update: scd41_humidity
 
 esphome:
   # Zelftest fase 3: SCD4x waarden
