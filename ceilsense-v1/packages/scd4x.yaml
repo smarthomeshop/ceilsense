@@ -29,7 +29,7 @@ number:
     entity_category: config
     optimistic: true
     restore_value: true
-    initial_value: 7.9  # Extra offset bovenop vaste 10°C
+    initial_value: 5  # Extra offset bovenop vaste 10°C
     min_value: -20.0
     max_value: 20.0
     step: 0.1
