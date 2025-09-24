@@ -1,0 +1,536 @@
+# yamllint disable
+# CeilSense v1 - Complete WiFi + LD2412 + SCD4x (single file build)
+
+substitutions:
+  # Variant identifiers
+  device_name: ceilsense
+  friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-complete-wifi-ld2412"
+  build_variant: "ceilsense-complete-wifi-ld2412"
+
+  # Versions (intentionally lower, so dashboard shows update to repo version)
+  project_name: "smarthomeshop.ceilsense"
+  project_version: "0.9.0-beta"
+
+  # Networking / logging
+  wifi_fast_connect: "true"
+  log_level: "INFO"
+  wifi_ssid: "REPLACE_WITH_YOUR_SSID"
+  wifi_password: "REPLACE_WITH_YOUR_PASSWORD"
+
+  # OTA / update manifest for end-users
+  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2412-manifest.json"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: ${project_name}
+    version: ${project_version}
+  build_path: build/${build_variant}
+  on_boot:
+    # Fase 1: WiFi + onboarding
+    - priority: 600
+      then:
+        - lambda: |-
+            id(startup_phase) = 1;
+        - light.turn_on:
+            id: status_led
+            brightness: 80%
+            effect: "Circulair Laad Effect"
+        # Wacht tot WiFi verbonden (max 30s)
+        - wait_until:
+            condition:
+              wifi.connected:
+            timeout: 30s
+        - if:
+            condition:
+              wifi.connected:
+            then:
+              - script.execute: play_stream
+              - if:
+                  condition:
+                    switch.is_on: ble_disable_after_boot
+                  then:
+                    - ble.disable:
+              - if:
+                  condition:
+                    lambda: 'return !id(onboarding_sent);'
+                  then:
+                    - http_request.get:
+                        url: "https://smarthomeshop.io/finish-onboarding/ceilsense"
+                    - lambda: 'id(onboarding_sent) = true;'
+    # Fase 2: LD2412 detectie
+    - priority: 580
+      then:
+        - lambda: 'id(ld2412_required) = true;'
+        - lambda: |-
+            id(startup_phase) = 2;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() && std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(ld2412_fm_version).has_state() || std::string(id(ld2412_fm_version).state.c_str()) == "unknown";
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - lambda: 'id(ld2412_checked) = true;'
+    # Fase 3: SCD4x waarden
+    - priority: 560
+      then:
+        - lambda: 'id(scd4x_required) = true;'
+        - lambda: |-
+            id(startup_phase) = 3;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(scd41_co2).has_state() && id(scd41_temperature).has_state() && id(scd41_humidity).has_state() &&
+                       !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
+            timeout: 90s  # Langere timeout voor SCD4x
+        - if:
+            condition:
+              lambda: |-
+                return !id(scd41_co2).has_state() || !id(scd41_temperature).has_state() || !id(scd41_humidity).has_state() ||
+                       isnan(id(scd41_co2).state) || isnan(id(scd41_temperature).state) || isnan(id(scd41_humidity).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - lambda: 'id(scd4x_checked) = true;'
+    # Fase 4: BH1750 + Fase 5: BMP3xx + final LED
+    - priority: 540
+      then:
+        # Fase 4: BH1750 lux
+        - lambda: |-
+            id(startup_phase) = 4;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(illuminance).has_state() && !isnan(id(illuminance).state);
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(illuminance).has_state() || isnan(id(illuminance).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        # Fase 5: BMP3xx druk
+        - lambda: |-
+            id(startup_phase) = 5;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(bmp_pressure).has_state() && !isnan(id(bmp_pressure).state);
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(bmp_pressure).has_state() || isnan(id(bmp_pressure).state);
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        # Finale indicatie en afronden (wacht op verplichte checks)
+        - wait_until:
+            condition:
+              lambda: |-
+                const bool ld2412_ok = !id(ld2412_required) || id(ld2412_checked);
+                const bool scd4x_ok = !id(scd4x_required) || id(scd4x_checked);
+                return ld2412_ok && scd4x_ok;
+            timeout: 120s
+        - light.turn_off: status_led
+        - if:
+            condition:
+              lambda: |-
+                return !id(startup_failed);
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 100%
+                  red: 100%
+                  green: 100%
+                  blue: 100%
+                  transition_length: 1s
+              - delay: 3s
+              - light.turn_off:
+                  id: status_led
+                  transition_length: 1s
+            else:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 100%
+                  red: 100%
+                  green: 0%
+                  blue: 0%
+                  transition_length: 200ms
+              - delay: 20s
+              - light.turn_off:
+                  id: status_led
+                  transition_length: 300ms
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+logger:
+  level: ${log_level}
+  baud_rate: 115200
+  hardware_uart: UART0
+
+api:
+
+ota:
+  - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
+
+# Enable ESPHome debug component for debug text_sensor
+debug:
+  update_interval: 30s
+
+# WiFi + captive + provisioning
+wifi:
+  ap:
+    password: "ceilsense"
+
+captive_portal:
+
+esp32_improv:
+  authorizer: none
+
+improv_serial:
+
+# HTTP client for onboarding and Update entity
+http_request:
+  useragent: ceilsense-esphome
+
+update:
+  - platform: http_request
+    name: CeilSense Firmware
+    source: ${update_manifest_url}
+    disabled_by_default: true
+
+web_server:
+  port: 80
+
+# Globals
+globals:
+  - id: startup_phase
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: startup_failed
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: onboarding_sent
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: ld2412_required
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: scd4x_required
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: ld2412_checked
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: scd4x_checked
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: dbg_last_dist_m
+    type: float
+    restore_value: no
+    initial_value: "0.0"
+  - id: dbg_smooth_dist_m
+    type: float
+    restore_value: no
+    initial_value: "0.0"
+  - id: dbg_last_leds
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+# UART voor LD2412
+uart:
+  id: uart_bus
+  tx_pin: GPIO18
+  rx_pin: GPIO17
+  baud_rate: 115200
+  parity: NONE
+  stop_bits: 1
+
+ld2412:
+  id: ld2412s_radar
+  uart_id: uart_bus
+
+# I2C + sensors (lagere frequentie voor stabiliteit)
+i2c:
+  sda: GPIO11
+  scl: GPIO10
+  scan: true
+  id: bus_a
+  frequency: 100kHz
+
+light:
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: GPIO20
+    num_leds: 16
+    chipset: ws2812
+    id: status_led
+    name: "CeilSense Status LED"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    effects:
+      - addressable_lambda:
+          name: "Circulair Laad Effect"
+          update_interval: 100ms
+          lambda: |-
+            static int pos = 0;
+            const int tail_length = 2;
+            const float brightness_step = 1.0 / (tail_length + 1);
+            it.all() = esphome::Color(0, 0, 0);
+            esphome::Color headColor(0, 0, 255);
+            switch (id(startup_phase)) {
+              case 1: headColor = esphome::Color(0, 255, 255); break;
+              case 2: headColor = esphome::Color(255, 0, 255); break;
+              case 3: headColor = esphome::Color(0, 255, 0); break;
+              case 4: headColor = esphome::Color(255, 128, 0); break;
+              default: headColor = esphome::Color(0, 0, 255); break;
+            }
+            it[pos] = headColor;
+            for (int i = 1; i <= tail_length; i++) {
+              float brightness = 1.0 - (i * brightness_step);
+              int index = (pos - i + it.size()) % it.size();
+              auto color = headColor;
+              color.red = static_cast<uint8_t>(color.red * brightness);
+              color.green = static_cast<uint8_t>(color.green * brightness);
+              color.blue = static_cast<uint8_t>(color.blue * brightness);
+              it[index] = color;
+            }
+            pos = (pos + 1) % it.size();
+      - addressable_lambda:
+          name: "LD2412 Debug Distance"
+          update_interval: 100ms
+          lambda: |-
+            float dist = 0.0;
+            const bool moving = id(moving_target).state;
+            const bool still = id(still_target).state;
+            if (moving && id(moving_distance).has_state()) {
+              dist = id(moving_distance).state;
+            } else if (still && id(still_distance).has_state()) {
+              dist = id(still_distance).state;
+            }
+            id(dbg_last_dist_m) = dist;
+            const float smooth_alpha = 0.3f;
+            id(dbg_smooth_dist_m) = smooth_alpha * dist + (1.0f - smooth_alpha) * id(dbg_smooth_dist_m);
+            const float smooth_dist = id(dbg_smooth_dist_m);
+            const int num_leds = it.size();
+            const int leds_on = std::min(num_leds, (int)(smooth_dist * 2.0f));
+            id(dbg_last_leds) = leds_on;
+            it.all() = esphome::Color(0, 0, 0);
+            for (int i = 0; i < leds_on; i++) {
+              const float ratio = (float)i / (float)num_leds;
+              if (ratio < 0.5f) {
+                it[i] = esphome::Color(0, (uint8_t)(255 * ratio * 2.0f), 0);
+              } else {
+                const float red_ratio = (ratio - 0.5f) * 2.0f;
+                it[i] = esphome::Color((uint8_t)(255 * red_ratio), 255, 0);
+              }
+            }
+
+sensor:
+  - platform: internal_temperature
+    name: "CPU Temperature"
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    id: illuminance
+    address: 0x23
+    update_interval: 60s
+  - platform: bmp3xx_i2c
+    temperature:
+      name: "BMP3xx Temperature"
+    pressure:
+      name: "BMP3xx Pressure"
+      id: bmp_pressure
+    address: 0x76
+    update_interval: 60s
+  # LD2412 sensors
+  - platform: ld2412
+    moving_distance:
+      name : Moving Distance
+      id: moving_distance
+    still_distance:
+      name: Still Distance
+      id: still_distance
+    moving_energy:
+      name: Move Energy
+    still_energy:
+      name: Still Energy
+    light:
+      name: LD2412 light
+      entity_category: diagnostic
+  # SCD4x sensors met offsets
+  - platform: scd4x
+    co2:
+      name: "SCD41 CO2"
+      id: scd41_co2
+    temperature:
+      name: "SCD41 Temperature"
+      id: scd41_temperature
+      filters:
+        - lambda: |-
+            return x + id(scd4x_temp_offset).state;
+    humidity:
+      name: "SCD41 Humidity"
+      id: scd41_humidity
+      filters:
+        - lambda: |-
+            return x + id(scd4x_humidity_offset).state;
+    measurement_mode: low_power_periodic
+    update_interval: 60s  # Minder frequent voor stabiliteit
+    automatic_self_calibration: false
+    temperature_offset: 10.0  # Vaste offset voor ESP warmte compensatie
+    ambient_pressure_compensation_source: bmp_pressure
+
+# Configureerbare offsets
+number:
+  - platform: template
+    name: "SCD4x Extra Temperature Offset (°C)"
+    id: scd4x_temp_offset
+    icon: mdi:thermometer-plus
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 7.9  # Extra offset bovenop vaste 10°C
+    min_value: -20.0
+    max_value: 20.0
+    step: 0.1
+    unit_of_measurement: "°C"
+    mode: box
+
+  - platform: template
+    name: "SCD4x Humidity Offset (%)"
+    id: scd4x_humidity_offset
+    icon: mdi:water-percent
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+    min_value: -20.0
+    max_value: 20.0
+    step: 0.1
+    unit_of_measurement: "%"
+    mode: box
+
+binary_sensor:
+  - platform: ld2412
+    has_target:
+      name: Presence
+      id: presence
+      on_press:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 70%
+                  effect: "LD2412 Debug Distance"
+      on_release:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_off: status_led
+    has_moving_target:
+      name: Moving Target
+      id: moving_target
+    has_still_target:
+      name: Still Target
+      id: still_target
+
+switch:
+  - platform: template
+    name: "LD2412 Debug Modus"
+    id: debug_mode
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Bluetooth na boot uitschakelen"
+    id: ble_disable_after_boot
+    icon: mdi:bluetooth-off
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+button:
+  - platform: restart
+    name: "Apparaat herstarten"
+    id: btn_restart
+  - platform: factory_reset
+    id: factory_reset_button
+    name: "Factory Reset"
+    entity_category: config
+    disabled_by_default: true
+
+text_sensor:
+  # Debug
+  - platform: debug
+    reset_reason:
+      name: "ESP Reset Reason"
+      icon: mdi:anchor
+      disabled_by_default: True
+  # Software/Hardware versions
+  - platform: template
+    id: ceilsense_software_version_text
+    name: "Software Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${project_version}"};
+  - platform: template
+    id: ceilsense_hardware_version_text
+    name: "Hardware Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${ceilsense_hardware_version}"};
+  # WiFi diagnostics
+  - platform: wifi_info
+    ip_address:
+      name: ESP IP Address
+      id: wifi_ip
+      entity_category: diagnostic
+      disabled_by_default: true
+    mac_address:
+      name: ESP MAC
+      id: wifi_mac
+      entity_category: diagnostic
+      disabled_by_default: true
+  # LD2412 info
+  - platform: ld2412
+    version:
+      name: LD2412S FM Version
+      id: ld2412_fm_version
+    mac_address:
+      name: LD2412S Mac
+      id: ld2412_mac
+
+script:
+  - id: play_stream
+    then:
+      - delay: 10ms
+
+dashboard_import:
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml@main
+  import_full_config: false

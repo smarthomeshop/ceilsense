@@ -35,30 +35,6 @@ number:
     step: 0.1
     unit_of_measurement: "°C"
     mode: box
-    on_value:
-      then:
-        - lambda: |-
-            id(scd4x_temp_offset_f).publish_state(x * 9.0 / 5.0);
-
-  - platform: template
-    name: "SCD4x Extra Temperature Offset (°F)"
-    id: scd4x_temp_offset_f
-    icon: mdi:thermometer-plus
-    entity_category: config
-    optimistic: true
-    restore_value: true
-    initial_value: 14.22  # 7.9°C in Fahrenheit
-    min_value: -36.0  # -20°C in Fahrenheit
-    max_value: 36.0   # 20°C in Fahrenheit  
-    step: 0.1
-    unit_of_measurement: "°F"
-    mode: box
-    on_value:
-      then:
-        - number.set:
-            id: scd4x_temp_offset
-            value: !lambda |-
-              return (x * 5.0 / 9.0);
 
   - platform: template
     name: "SCD4x Humidity Offset (%)"
@@ -82,15 +58,12 @@ esphome:
         - lambda: 'id(scd4x_required) = true;'
         - lambda: |-
             id(startup_phase) = 3;
-        # Sync Fahrenheit offset with Celsius offset
-        - lambda: |-
-            id(scd4x_temp_offset_f).publish_state(id(scd4x_temp_offset).state * 9.0 / 5.0);
         - wait_until:
             condition:
               lambda: |-
                 return id(scd41_co2).has_state() && id(scd41_temperature).has_state() && id(scd41_humidity).has_state() &&
                        !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
-            timeout: 45s
+            timeout: 60s
         - if:
             condition:
               lambda: |-
