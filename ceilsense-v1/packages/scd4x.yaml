@@ -9,20 +9,61 @@ sensor:
     humidity:
       name: "SCD41 Humidity"
       id: scd41_humidity
-      filters:
-        offset: 4
+      # filters:
+      #   offset: 4
     measurement_mode: low_power_periodic
     update_interval: 30s
     automatic_self_calibration: false
-    temperature_offset: 17.9
+    temperature_offset: !lambda |-
+      return id(scd4x_temp_offset).state;
     ambient_pressure_compensation_source: bmp_pressure
 
+number:
+  - platform: template
+    name: "SCD4x Temperature Offset (°C)"
+    id: scd4x_temp_offset
+    icon: mdi:thermometer-plus
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 17.9
+    min_value: -20.0
+    max_value: 20.0
+    step: 0.1
+    unit_of_measurement: "°C"
+    mode: box
+    on_value:
+      then:
+        - component.update: scd41_co2
+
+  - platform: template
+    name: "SCD4x Temperature Offset (°F)"
+    id: scd4x_temp_offset_f
+    icon: mdi:thermometer-plus
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: !lambda |-
+      return (id(scd4x_temp_offset).state * 9.0 / 5.0);
+    min_value: -36.0  # -20°C in Fahrenheit
+    max_value: 36.0   # 20°C in Fahrenheit  
+    step: 0.1
+    unit_of_measurement: "°F"
+    mode: box
+    on_value:
+      then:
+        - number.set:
+            id: scd4x_temp_offset
+            value: !lambda |-
+              return (x * 5.0 / 9.0);
+        - component.update: scd41_co2
 
 esphome:
   # Zelftest fase 3: SCD4x waarden
   on_boot:
     - priority: 560
       then:
+        - lambda: 'id(scd4x_required) = true;'
         - lambda: |-
             id(startup_phase) = 3;
         - wait_until:

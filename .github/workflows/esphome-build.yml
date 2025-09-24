@@ -58,7 +58,7 @@ jobs:
       project-version: ${{ steps.esphome-build.outputs.project-version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Compute version and inject into base.yaml
+      - name: Compute version and inject into YAML
         shell: bash
         run: |
           # Determine VERSION from tag or fallback to dev-<sha>
@@ -69,9 +69,11 @@ jobs:
             VERSION="dev-${SHORTSHA}"
           fi
           echo "Using VERSION=$VERSION"
-          # Update substitutions in base.yaml before build
-          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
-          sed -i "s/^\s*ceilsense_software_version: \".*\"/  ceilsense_software_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
+          # Extract main version from base.yaml
+          MAIN_VERSION=$(grep "project_main_version:" ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/')
+          echo "Using MAIN_VERSION=$MAIN_VERSION"
+          # Update project_version in base.yaml
+          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${MAIN_VERSION}\"/" ceilsense-v1/base.yaml
       - name: Create dummy secrets for build
         shell: bash
         run: |

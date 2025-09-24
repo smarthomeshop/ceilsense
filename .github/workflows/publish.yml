@@ -15,8 +15,70 @@ permissions:
   contents: write
 
 jobs:
+  update-versions:
+    name: Update version numbers in YAML files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update version numbers
+        shell: bash
+        run: |
+          # Determine VERSION from tag or fallback to increment version
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "Using tag VERSION=$VERSION"
+            # Update both main version and project version for tags
+            sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
+            sed -i "s/^\s*project_version: \".*\"/  project_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
+          else
+            # For pushes, increment the version
+            CURRENT_VERSION=$(grep "project_main_version:" ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/')
+            echo "Current version: $CURRENT_VERSION"
+            
+            # Extract version parts and increment
+            if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)(.*)$ ]]; then
+              MAJOR="${BASH_REMATCH[1]}"
+              MINOR="${BASH_REMATCH[2]}"
+              SUFFIX="${BASH_REMATCH[3]}"
+              NEW_MINOR=$((MINOR + 1))
+              NEW_VERSION="${MAJOR}.${NEW_MINOR}${SUFFIX}"
+            else
+              # Fallback for unexpected format
+              SHORTSHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+              NEW_VERSION="dev-${SHORTSHA}"
+            fi
+            
+            echo "New version: $NEW_VERSION"
+            
+            # Update version fields
+            sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${NEW_VERSION}\"/" ceilsense-v1/base.yaml
+            sed -i "s/^\s*project_version: \".*\"/  project_version: \"${NEW_VERSION}\"/" ceilsense-v1/base.yaml
+          fi
+          
+          # Check if files were actually modified
+          if git diff --quiet ceilsense-v1/base.yaml; then
+            echo "No version changes needed"
+            exit 0
+          fi
+          
+          echo "Version updated successfully"
+      - name: Commit version updates
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ceilsense-v1/base.yaml
+          git commit -m "chore: update version to $(grep 'project_main_version:' ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/') [skip ci]" || exit 0
+          git push || echo "Nothing to push"
+
+  # Basic variants
   publish-ceilsense-basic-wifi:
     name: Publish CeilSense Basic WiFi
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi.yaml
@@ -25,8 +87,11 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi
+
   publish-ceilsense-basic-wifi-ld2412:
     name: Publish CeilSense Basic WiFi LD2412
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml
@@ -35,8 +100,24 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi-ld2412
+
+  publish-ceilsense-basic-wifi-ld2412-single:
+    name: Publish CeilSense Basic WiFi LD2412 Single
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2412-single.yaml
+      name: CeilSense Basic WiFi LD2412 Single
+      manifest_filename: ceilsense-basic-wifi-ld2412-single-manifest.json
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-wifi-ld2412-single
+
   publish-ceilsense-basic-eth:
     name: Publish CeilSense Basic Ethernet
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-eth.yaml
@@ -45,8 +126,11 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth
+
   publish-ceilsense-basic-eth-ld2412:
     name: Publish CeilSense Basic Ethernet LD2412
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-eth-ld2412.yaml
@@ -55,8 +139,12 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth-ld2412
+
+  # Complete variants
   publish-ceilsense-complete-wifi:
     name: Publish CeilSense Complete WiFi
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-wifi.yaml
@@ -65,8 +153,11 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi
+
   publish-ceilsense-complete-wifi-ld2412:
     name: Publish CeilSense Complete WiFi LD2412
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml
@@ -75,8 +166,11 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi-ld2412
+
   publish-ceilsense-complete-eth:
     name: Publish CeilSense Complete Ethernet
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-eth.yaml
@@ -85,8 +179,11 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-eth
+
   publish-ceilsense-complete-eth-ld2412:
     name: Publish CeilSense Complete Ethernet LD2412
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-eth-ld2412.yaml

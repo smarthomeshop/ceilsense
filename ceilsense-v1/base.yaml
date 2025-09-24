@@ -5,8 +5,8 @@ substitutions:
   device_name: "ceilsense"
   friendly_name: "CeilSense"
   project_name: "smarthomeshop.ceilsense"
-  project_version: "1.0.0-beta"
-  ceilsense_software_version: "1.0.0-beta"
+  project_main_version: "1"
+  project_version: "1.1"
   ceilsense_hardware_version: "v1"
   build_variant: "ceilsense"
   log_level: "INFO"
@@ -53,11 +53,13 @@ esphome:
             then:
               - lambda: |-
                   id(startup_failed) = true;
-        # Finale indicatie en afronden (wacht tot LD2412 & SCD4x checks klaar)
+        # Finale indicatie en afronden (wacht op verplichte checks)
         - wait_until:
             condition:
               lambda: |-
-                return id(ld2412_checked) && id(scd4x_checked);
+                const bool ld2412_ok = !id(ld2412_required) || id(ld2412_checked);
+                const bool scd4x_ok = !id(scd4x_required) || id(scd4x_checked);
+                return ld2412_ok && scd4x_ok;
             timeout: 120s
         - light.turn_off: status_led
         - if:
@@ -124,6 +126,14 @@ globals:
   - id: onboarding_sent
     type: bool
     restore_value: yes
+    initial_value: "false"
+  - id: ld2412_required
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: scd4x_required
+    type: bool
+    restore_value: no
     initial_value: "false"
   - id: ld2412_checked
     type: bool
@@ -261,7 +271,7 @@ text_sensor:
     name: "Software Version"
     update_interval: 5h
     lambda: |-
-      return {"${ceilsense_software_version}"};
+      return {"${project_version}"};
   - platform: template
     id: ceilsense_hardware_version_text
     name: "Hardware Version"

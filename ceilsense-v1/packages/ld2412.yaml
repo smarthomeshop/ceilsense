@@ -69,6 +69,7 @@ esphome:
   on_boot:
     - priority: 580
       then:
+        - lambda: 'id(ld2412_required) = true;'
         - lambda: |-
             id(startup_phase) = 2;
         - wait_until:

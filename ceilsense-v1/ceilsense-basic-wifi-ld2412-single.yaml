@@ -1,12 +1,12 @@
 # yamllint disable
-# CeilSense v1 - Complete WiFi + LD2412 (single file build)
+# CeilSense v1 - Basic WiFi + LD2412 (single file build)
 
 substitutions:
   # Variant identifiers
   device_name: ceilsense
   friendly_name: "CeilSense"
-  ceilsense_hardware_version: "v1-complete-wifi-ld2412"
-  build_variant: "ceilsense-complete-wifi-ld2412"
+  ceilsense_hardware_version: "v1-basic-wifi-ld2412"
+  build_variant: "ceilsense-basic-wifi-ld2412"
 
   # Versions (intentionally lower, so dashboard shows update to repo version)
   project_name: "smarthomeshop.ceilsense"
@@ -20,7 +20,7 @@ substitutions:
   wifi_password: "REPLACE_WITH_YOUR_PASSWORD"
 
   # OTA / update manifest for end-users
-  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2412-manifest.json"
+  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-ld2412-manifest.json"
 
 esphome:
   name: ${device_name}
@@ -80,26 +80,6 @@ esphome:
               - lambda: |-
                   id(startup_failed) = true;
         - lambda: 'id(ld2412_checked) = true;'
-    # Fase 3: SCD4x waarden
-    - priority: 560
-      then:
-        - lambda: |-
-            id(startup_phase) = 3;
-        - wait_until:
-            condition:
-              lambda: |-
-                return id(scd41_co2).has_state() && id(scd41_temperature).has_state() && id(scd41_humidity).has_state() &&
-                       !isnan(id(scd41_co2).state) && !isnan(id(scd41_temperature).state) && !isnan(id(scd41_humidity).state);
-            timeout: 45s
-        - if:
-            condition:
-              lambda: |-
-                return !id(scd41_co2).has_state() || !id(scd41_temperature).has_state() || !id(scd41_humidity).has_state() ||
-                       isnan(id(scd41_co2).state) || isnan(id(scd41_temperature).state) || isnan(id(scd41_humidity).state);
-            then:
-              - lambda: |-
-                  id(startup_failed) = true;
-        - lambda: 'id(scd4x_checked) = true;'
     # Fase 4: BH1750 + Fase 5: BMP3xx + final LED
     - priority: 540
       then:
@@ -137,9 +117,9 @@ esphome:
         - wait_until:
             condition:
               lambda: |-
-                // Ga pas door als LD2412- én SCD4x-fase klaar zijn of gefaald hebben
-                return id(ld2412_checked) && id(scd4x_checked);
-            timeout: 120s
+                // Basic LD2412 build: wacht alleen op LD2412-check
+                return id(ld2412_checked);
+            timeout: 60s
         - light.turn_off: status_led
         - if:
             condition:
@@ -340,23 +320,6 @@ sensor:
     light:
       name: LD2412 light
       entity_category: diagnostic
-  - platform: scd4x
-    co2:
-      name: "SCD41 CO2"
-      id: scd41_co2
-    temperature:
-      name: "SCD41 Temperature"
-      id: scd41_temperature
-    humidity:
-      name: "SCD41 Humidity"
-      id: scd41_humidity
-      filters:
-        offset: 4
-    measurement_mode: low_power_periodic
-    update_interval: 30s
-    automatic_self_calibration: false
-    temperature_offset: 17.9
-    ambient_pressure_compensation_source: bmp_pressure
 
 binary_sensor:
   - platform: ld2412
@@ -455,7 +418,7 @@ script:
       - delay: 10ms
 
 dashboard_import:
-  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml@main
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml@main
   import_full_config: false
 
 
