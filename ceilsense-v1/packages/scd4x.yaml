@@ -1,5 +1,6 @@
 sensor:
   - platform: scd4x
+    id: scd41_sensor
     co2:
       name: "SCD41 CO2"
       id: scd41_co2
