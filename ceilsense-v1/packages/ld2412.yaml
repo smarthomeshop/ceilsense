@@ -64,7 +64,7 @@ sensor:
       name: LD2412 light
       entity_category: diagnostic
 
-# Zelftest fase 2: LD2412
+# Self-test phase 2: LD2412
 esphome:
   on_boot:
     - priority: 580

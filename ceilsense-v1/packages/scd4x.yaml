@@ -19,7 +19,7 @@ sensor:
     measurement_mode: low_power_periodic
     update_interval: 30s
     automatic_self_calibration: false
-    temperature_offset: 10.0  # Vaste offset voor ESP warmte compensatie
+    temperature_offset: 10.0  # Default offset for ESP temperature compensation
     ambient_pressure_compensation_source: bmp_pressure
 
 number:
@@ -30,7 +30,7 @@ number:
     entity_category: config
     optimistic: true
     restore_value: true
-    initial_value: 5  # Extra offset bovenop vaste 10°C
+    initial_value: 5  # Extra offset above fixed 10°C
     min_value: -20.0
     max_value: 20.0
     step: 0.1
@@ -52,7 +52,7 @@ number:
     mode: box
 
 esphome:
-  # Zelftest fase 3: SCD4x waarden
+  # Self-test phase 3: SCD4x values
   on_boot:
     - priority: 560
       then:
