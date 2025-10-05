@@ -47,6 +47,9 @@ binary_sensor:
     has_still_target:
       name: Still Target
       id: still_target
+    dynamic_background_correction_status:
+      name: Dynamic Background Correction Status
+      id: ld2412_dynamic_background
 
 sensor:
   - platform: ld2412
@@ -58,11 +61,91 @@ sensor:
       id: still_distance
     moving_energy:
       name: Move Energy
+      id: move_energy
     still_energy:
       name: Still Energy
+      id: still_energy
     light:
       name: LD2412 light
       entity_category: diagnostic
+      id: ld2412_light
+    detection_distance:
+      name: Detection Distance
+      id: detection_distance
+    gate_0:
+      move_energy:
+        name: Gate 0 Move Energy
+        id: gate0_move_energy
+        entity_category: diagnostic
+      still_energy:
+        name: Gate 0 Still Energy
+        id: gate0_still_energy
+        entity_category: diagnostic
+
+switch:
+  - platform: ld2412
+    ld2412_id: ld2412s_radar
+    engineering_mode:
+      name: LD2412 Engineering Mode
+      id: ld2412_engineering_mode
+      entity_category: config
+    bluetooth:
+      name: LD2412 Bluetooth
+      id: ld2412_bluetooth
+      entity_category: config
+
+number:
+  - platform: ld2412
+    ld2412_id: ld2412s_radar
+    timeout:
+      name: Presence Timeout (s)
+      id: ld2412_timeout
+      entity_category: config
+      icon: mdi:timer-outline
+    min_distance_gate:
+      name: Minimum Distance Gate
+      id: ld2412_min_gate
+      entity_category: config
+    max_distance_gate:
+      name: Maximum Distance Gate
+      id: ld2412_max_gate
+      entity_category: config
+    light_threshold:
+      name: Light Threshold
+      id: ld2412_light_threshold
+      entity_category: config
+
+button:
+  - platform: ld2412
+    ld2412_id: ld2412s_radar
+    factory_reset:
+      name: LD2412 Factory Reset
+      entity_category: diagnostic
+      icon: mdi:backup-restore
+    restart:
+      name: LD2412 Restart
+      entity_category: diagnostic
+      icon: mdi:restart
+    query_params:
+      name: LD2412 Query Parameters
+      entity_category: diagnostic
+      icon: mdi:playlist-check
+    start_dynamic_background_correction:
+      name: Start Dynamic Background Correction
+      entity_category: diagnostic
+      icon: mdi:chart-bell-curve
+
+select:
+  - platform: ld2412
+    ld2412_id: ld2412s_radar
+    distance_resolution:
+      name: LD2412 Distance Resolution
+      id: ld2412_distance_resolution
+      entity_category: config
+    light_function:
+      name: LD2412 Light Function
+      id: ld2412_light_function
+      entity_category: config
 
 # Self-test phase 2: LD2412
 esphome:
