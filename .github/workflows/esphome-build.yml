@@ -32,6 +32,11 @@ on:
         required: true
         type: string
         default: esp32
+      project_version:
+        description: Explicit project version to inject before building.
+        required: false
+        type: string
+        default: ''
 
 jobs:
   prepare:
@@ -61,19 +66,27 @@ jobs:
       - name: Compute version and inject into YAML
         shell: bash
         run: |
-          # Determine VERSION from tag or fallback to dev-<sha>
-          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+          set -euo pipefail
+
+          if [[ -n "${{ inputs.project_version }}" ]]; then
+            VERSION="${{ inputs.project_version }}"
+            echo "Using workflow provided VERSION=$VERSION"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
+            echo "Using tag VERSION=$VERSION"
           else
             SHORTSHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
             VERSION="dev-${SHORTSHA}"
+            echo "Using fallback VERSION=$VERSION"
           fi
-          echo "Using VERSION=$VERSION"
+
           # Extract main version from base.yaml
           MAIN_VERSION=$(grep "project_main_version:" ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/')
           echo "Using MAIN_VERSION=$MAIN_VERSION"
-          # Update project_version in base.yaml
-          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${MAIN_VERSION}\"/" ceilsense-v1/base.yaml
+
+          # Update project version data before build
+          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${VERSION}\"/" ceilsense-v1/base.yaml
+          sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${MAIN_VERSION}\"/" ceilsense-v1/base.yaml
       - name: Create dummy secrets for build
         shell: bash
         run: |

@@ -1,6 +1,16 @@
+substitutions:
+  scd4x_i2c_id: "bus_a"
+  scd4x_address: 0x62
+  scd4x_measurement_mode: "low_power_periodic"
+  scd4x_update_interval: "30s"
+  scd4x_asc: false
+  scd4x_temperature_offset: 10.0
+
 sensor:
   - platform: scd4x
     id: scd41_sensor
+    i2c_id: ${scd4x_i2c_id}
+    address: ${scd4x_address}
     co2:
       name: "SCD41 CO2"
       id: scd41_co2
@@ -16,10 +26,10 @@ sensor:
       filters:
         - lambda: |-
             return x + id(scd4x_humidity_offset).state;
-    measurement_mode: low_power_periodic
-    update_interval: 30s
-    automatic_self_calibration: false
-    temperature_offset: 10.0  # Default offset for ESP temperature compensation
+    measurement_mode: ${scd4x_measurement_mode}
+    update_interval: ${scd4x_update_interval}
+    automatic_self_calibration: ${scd4x_asc}
+    temperature_offset: ${scd4x_temperature_offset}  # Default offset for ESP temperature compensation
     ambient_pressure_compensation_source: bmp_pressure
 
 number:

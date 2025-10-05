@@ -11,6 +11,7 @@ substitutions:
   build_variant: "ceilsense"
   log_level: "INFO"
   update_manifest_url: "https://example.com/manifest.json"
+  i2c_frequency: "400kHz"
 
 esphome:
   name: ${device_name}
@@ -217,6 +218,7 @@ i2c:
   scl: GPIO10
   scan: true
   id: bus_a
+  frequency: ${i2c_frequency}
 
 sensor:
   - platform: internal_temperature
