@@ -121,7 +121,7 @@ button:
     icon: mdi:tune
     on_press:
       then:
-        - api.call_action:
+        - api.action:
             action: calibrate_scd4x
             data:
               co2_ppm: 426

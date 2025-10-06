@@ -103,7 +103,8 @@ logger:
   hardware_uart: UART0
   
 api:
-
+  actions:
+    - action: calibrate_scd4x
 ota:
   - platform: esphome
     id: ota_esphome
