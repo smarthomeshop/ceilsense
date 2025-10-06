@@ -91,33 +91,15 @@ api:
       variables:
         co2_ppm: int
       then:
-        - logger.log:
-            format: "Starting SCD4x forced calibration towards %d ppm"
-            args: [ 'co2_ppm' ]
-            level: INFO
-        - if:
-            condition:
-              and:
-                - lambda: 'return id(scd41_sensor).has_state();'
-                - lambda: 'return co2_ppm >= 400 && co2_ppm <= 2000;'
-            then:
-              - scd4x.perform_forced_calibration:
-                  id: scd41_sensor
-                  value: !lambda 'return co2_ppm;'
-              - logger.log:
-                  format: "SCD4x calibration command dispatched"
-                  level: INFO
-            else:
-              - logger.log:
-                  format: "Skipping SCD4x calibration; invalid state or target %d ppm"
-                  args: [ 'co2_ppm' ]
-                  level: WARN
+        - scd4x.perform_forced_calibration:
+            id: scd41_sensor
+            value: !lambda 'return co2_ppm;'
 
 button:
   - platform: template
-    name: "SCD4x Calibrate to 426 ppm"
+    name: "CO2 manual calibration (fresh air ≥3min)"
     id: scd4x_calibrate_426
-    entity_category: diagnostic
+    entity_category: config
     icon: mdi:tune
     on_press:
       then:
@@ -125,17 +107,3 @@ button:
             action: calibrate_scd4x
             data:
               co2_ppm: 426
-
-text_sensor:
-  - platform: template
-    name: "SCD4x Kalibratie Richtlijnen"
-    id: scd4x_calibration_guidance
-    entity_category: diagnostic
-    icon: mdi:information-outline
-    update_interval: never
-    lambda: |-
-      return std::string(
-        "Let the CeilSense operate in its normal measurement mode for at least 3 minutes in a stable, homogenous air "
-        "environment before triggering a forced calibration. Use 426 ppm as the reference value (global monthly "
-        "mean, March 2025)."
-      );
