@@ -103,7 +103,6 @@ button:
     icon: mdi:tune
     on_press:
       then:
-        - api.execute_service:
+        - api.service:
             service: calibrate_scd4x
-            data:
-              co2_ppm: 426
+            co2_ppm: 426
