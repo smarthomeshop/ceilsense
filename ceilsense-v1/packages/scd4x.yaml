@@ -86,8 +86,8 @@ esphome:
         - lambda: 'id(scd4x_checked) = true;'
 
 api:
-  actions:
-    - action: calibrate_scd4x
+  services:
+    - service: calibrate_scd4x
       variables:
         co2_ppm: int
       then:
@@ -103,7 +103,7 @@ button:
     icon: mdi:tune
     on_press:
       then:
-        - api.action:
-            action: calibrate_scd4x
+        - api.execute_service:
+            service: calibrate_scd4x
             data:
               co2_ppm: 426
