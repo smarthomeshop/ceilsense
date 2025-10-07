@@ -85,16 +85,6 @@ esphome:
                   id(startup_failed) = true;
         - lambda: 'id(scd4x_checked) = true;'
 
-api:
-  services:
-    - service: calibrate_scd4x
-      variables:
-        co2_ppm: int
-      then:
-        - scd4x.perform_forced_calibration:
-            id: scd41_sensor
-            value: !lambda 'return co2_ppm;'
-
 button:
   - platform: template
     name: "CO2 manual calibration (fresh air ≥3min)"
@@ -103,6 +93,6 @@ button:
     icon: mdi:tune
     on_press:
       then:
-        - api.service:
-            service: calibrate_scd4x
-            co2_ppm: 426
+        - scd4x.perform_forced_calibration:
+            id: scd41_sensor
+            value: 426
