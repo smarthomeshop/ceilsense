@@ -10,7 +10,10 @@ substitutions:
   ceilsense_hardware_version: "v1"
   build_variant: "ceilsense"
   log_level: "INFO"
-  update_manifest_url: "https://example.com/manifest.json"
+  # Default manifests (overridden by variants)
+  wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-manifest.json"
+  eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-manifest.json"
+  default_network: "WiFi"
   i2c_frequency: "400kHz"
 
 esphome:
@@ -22,6 +25,19 @@ esphome:
     version: ${project_version}
   build_path: build/${build_variant}
   on_boot:
+    - priority: 610
+      then:
+        - if:
+            condition:
+              lambda: 'return std::string("${default_network}") == std::string("Ethernet");'
+            then:
+              - logger.log: "OTA updates set to use ethernet firmware"
+              - lambda: 'id(firmware_update).set_source_url("${eth_update_manifest_url}");'
+              - component.update: firmware_update
+            else:
+              - logger.log: "OTA updates set to use wifi firmware"
+              - lambda: 'id(firmware_update).set_source_url("${wifi_update_manifest_url}");'
+              - component.update: firmware_update
     - priority: 540
       then:
         # Fase 4: BH1750 lux
@@ -208,8 +224,8 @@ http_request:
 update:
   - platform: http_request
     name: CeilSense Firmware
-    source: ${update_manifest_url}
-    disabled_by_default: true
+    id: firmware_update
+    source: ${wifi_update_manifest_url}
 
 # I2C + sensors
 i2c:
@@ -222,6 +238,7 @@ i2c:
 sensor:
   - platform: internal_temperature
     name: "CPU Temperature"
+    id: cpu_temperature
   - platform: bh1750
     name: "BH1750 Illuminance"
     id: illuminance
@@ -230,6 +247,7 @@ sensor:
   - platform: bmp3xx_i2c
     temperature:
       name: "BMP3xx Temperature"
+      id: bmp_temperature
     pressure:
       name: "BMP3xx Pressure"
       id: bmp_pressure
@@ -260,11 +278,39 @@ button:
     entity_category: config
     disabled_by_default: true
 
+# Firmware type selector (WiFi / Ethernet)
+select:
+  - platform: template
+    id: firmware_selector
+    name: Firmware Type
+    icon: "mdi:test-tube"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    options:
+      - "WiFi"
+      - "Ethernet"
+    initial_option: ${default_network}
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(firmware_selector).state == "Ethernet";'
+            then:
+              - logger.log: "OTA updates set to use ethernet firmware"
+              - lambda: 'id(firmware_update).set_source_url("${eth_update_manifest_url}");'
+              - component.update: firmware_update
+            else:
+              - logger.log: "OTA updates set to use wifi firmware"
+              - lambda: 'id(firmware_update).set_source_url("${wifi_update_manifest_url}");'
+              - component.update: firmware_update
+
 # Text sensors
 text_sensor:
   - platform: debug
     reset_reason:
       name: "ESP Reset Reason"
+      id: esp_reset_reason
       icon: mdi:anchor
       disabled_by_default: True
   - platform: template

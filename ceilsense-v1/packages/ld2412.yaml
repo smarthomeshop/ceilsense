@@ -120,18 +120,22 @@ button:
     ld2412_id: ld2412s_radar
     factory_reset:
       name: LD2412 Factory Reset
+      id: ld2412_factory_reset
       entity_category: diagnostic
       icon: mdi:backup-restore
     restart:
       name: LD2412 Restart
+      id: ld2412_restart
       entity_category: diagnostic
       icon: mdi:restart
     query_params:
       name: LD2412 Query Parameters
+      id: ld2412_query_params
       entity_category: diagnostic
       icon: mdi:playlist-check
     start_dynamic_background_correction:
       name: Start Dynamic Background Correction
+      id: ld2412_start_dbc
       entity_category: diagnostic
       icon: mdi:chart-bell-curve
 

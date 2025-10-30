@@ -213,8 +213,8 @@ http_request:
 update:
   - platform: http_request
     name: CeilSense Firmware
+    id: firmware_update
     source: ${update_manifest_url}
-    disabled_by_default: true
 
 web_server:
   port: 80
@@ -354,6 +354,7 @@ light:
 sensor:
   - platform: internal_temperature
     name: "CPU Temperature"
+    id: cpu_temperature
   - platform: bh1750
     name: "BH1750 Illuminance"
     id: illuminance
@@ -490,6 +491,7 @@ text_sensor:
   - platform: debug
     reset_reason:
       name: "ESP Reset Reason"
+      id: esp_reset_reason
       icon: mdi:anchor
       disabled_by_default: True
   # Software/Hardware versions

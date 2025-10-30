@@ -2,7 +2,9 @@ substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
   ceilsense_hardware_version: "v1-basic-wifi"
-  update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-manifest.json"
+  wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-manifest.json"
+  eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-manifest.json"
+  default_network: "WiFi"
 
 esphome:
   name: ${device_name}
