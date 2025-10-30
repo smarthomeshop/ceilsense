@@ -192,7 +192,7 @@ ota:
 
 # Enable ESPHome debug component for debug text_sensor
 debug:
-  update_interval: 30s
+  update_interval: 15min
 
 # WiFi + captive + provisioning
 wifi:
@@ -489,11 +489,14 @@ button:
 text_sensor:
   # Debug
   - platform: debug
+    device:
+      name: "Device Info"
     reset_reason:
       name: "ESP Reset Reason"
       id: esp_reset_reason
       icon: mdi:anchor
       disabled_by_default: True
+      entity_category: diagnostic
   # Software/Hardware versions
   - platform: template
     id: ceilsense_software_version_text
