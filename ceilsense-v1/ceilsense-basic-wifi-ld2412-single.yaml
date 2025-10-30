@@ -379,7 +379,7 @@ text_sensor:
       name: "Device Info"
     reset_reason:
       name: "ESP Reset Reason"
-      id: esp_reset_reason
+      id: esp_reset_reason_text
       icon: mdi:anchor
       disabled_by_default: True
       entity_category: diagnostic
