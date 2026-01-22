@@ -1,0 +1,22 @@
+# Complete Ethernet + LD2450 required (SCD4x required)
+substitutions:
+  device_name: ceilsense
+  friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-complete-eth-ld2450"
+  wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2450-manifest.json"
+  eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-ld2450-manifest.json"
+  default_network: "Ethernet"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  base: !include base.yaml
+  net: !include eth.yaml
+  ld2450: !include packages/ld2450.yaml
+  scd4x: !include packages/scd4x.yaml
+
+dashboard_import:
+  package_import_url: github://Diondk/ceilsense/ceilsense-v1/ceilsense-complete-eth-ld2450.yaml@main
+  import_full_config: false
