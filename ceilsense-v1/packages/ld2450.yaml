@@ -1,0 +1,277 @@
+# LD2450 package (UART + component via ESPHome core)
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO18
+  rx_pin: GPIO17
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
+ld2450:
+  id: ld2450_radar
+  uart_id: uart_bus
+
+text_sensor:
+  - platform: ld2450
+    version:
+      name: LD2450 FM Version
+      id: ld2450_fm_version
+    mac_address:
+      name: LD2450 Mac
+      id: ld2450_mac
+    target_1:
+      direction:
+        name: Target 1 Direction
+        id: target1_direction
+    target_2:
+      direction:
+        name: Target 2 Direction
+        id: target2_direction
+    target_3:
+      direction:
+        name: Target 3 Direction
+        id: target3_direction
+
+binary_sensor:
+  - platform: ld2450
+    has_target:
+      name: Presence
+      id: presence
+      on_press:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_on:
+                  id: status_led
+                  brightness: 70%
+                  effect: "Presence Active"
+      on_release:
+        - if:
+            condition:
+              switch.is_on: debug_mode
+            then:
+              - light.turn_off: status_led
+    has_moving_target:
+      name: Moving Target
+      id: moving_target
+    has_still_target:
+      name: Still Target
+      id: still_target
+
+sensor:
+  - platform: ld2450
+    target_count:
+      name: Target Count
+      id: target_count
+    still_target_count:
+      name: Still Target Count
+      id: still_target_count
+    moving_target_count:
+      name: Moving Target Count
+      id: moving_target_count
+    target_1:
+      x:
+        name: Target 1 X
+        id: target1_x
+        entity_category: diagnostic
+      y:
+        name: Target 1 Y
+        id: target1_y
+        entity_category: diagnostic
+      speed:
+        name: Target 1 Speed
+        id: target1_speed
+        entity_category: diagnostic
+      angle:
+        name: Target 1 Angle
+        id: target1_angle
+        entity_category: diagnostic
+      distance:
+        name: Target 1 Distance
+        id: target1_distance
+      resolution:
+        name: Target 1 Resolution
+        id: target1_resolution
+        entity_category: diagnostic
+    target_2:
+      x:
+        name: Target 2 X
+        id: target2_x
+        entity_category: diagnostic
+      y:
+        name: Target 2 Y
+        id: target2_y
+        entity_category: diagnostic
+      speed:
+        name: Target 2 Speed
+        id: target2_speed
+        entity_category: diagnostic
+      angle:
+        name: Target 2 Angle
+        id: target2_angle
+        entity_category: diagnostic
+      distance:
+        name: Target 2 Distance
+        id: target2_distance
+      resolution:
+        name: Target 2 Resolution
+        id: target2_resolution
+        entity_category: diagnostic
+    target_3:
+      x:
+        name: Target 3 X
+        id: target3_x
+        entity_category: diagnostic
+      y:
+        name: Target 3 Y
+        id: target3_y
+        entity_category: diagnostic
+      speed:
+        name: Target 3 Speed
+        id: target3_speed
+        entity_category: diagnostic
+      angle:
+        name: Target 3 Angle
+        id: target3_angle
+        entity_category: diagnostic
+      distance:
+        name: Target 3 Distance
+        id: target3_distance
+      resolution:
+        name: Target 3 Resolution
+        id: target3_resolution
+        entity_category: diagnostic
+    zone_1:
+      target_count:
+        name: Zone 1 Target Count
+        id: zone1_target_count
+    zone_2:
+      target_count:
+        name: Zone 2 Target Count
+        id: zone2_target_count
+    zone_3:
+      target_count:
+        name: Zone 3 Target Count
+        id: zone3_target_count
+
+switch:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    bluetooth:
+      name: LD2450 Bluetooth
+      id: ld2450_bluetooth
+      entity_category: config
+    multi_target:
+      name: LD2450 Multi Target Tracking
+      id: ld2450_multi_target
+      entity_category: config
+
+number:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    presence_timeout:
+      name: Presence Timeout (s)
+      id: ld2450_timeout
+      entity_category: config
+      icon: mdi:timer-outline
+    zone_1:
+      x1:
+        name: Zone 1 X1
+        id: zone1_x1
+        entity_category: config
+      y1:
+        name: Zone 1 Y1
+        id: zone1_y1
+        entity_category: config
+      x2:
+        name: Zone 1 X2
+        id: zone1_x2
+        entity_category: config
+      y2:
+        name: Zone 1 Y2
+        id: zone1_y2
+        entity_category: config
+    zone_2:
+      x1:
+        name: Zone 2 X1
+        id: zone2_x1
+        entity_category: config
+      y1:
+        name: Zone 2 Y1
+        id: zone2_y1
+        entity_category: config
+      x2:
+        name: Zone 2 X2
+        id: zone2_x2
+        entity_category: config
+      y2:
+        name: Zone 2 Y2
+        id: zone2_y2
+        entity_category: config
+    zone_3:
+      x1:
+        name: Zone 3 X1
+        id: zone3_x1
+        entity_category: config
+      y1:
+        name: Zone 3 Y1
+        id: zone3_y1
+        entity_category: config
+      x2:
+        name: Zone 3 X2
+        id: zone3_x2
+        entity_category: config
+      y2:
+        name: Zone 3 Y2
+        id: zone3_y2
+        entity_category: config
+
+button:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    factory_reset:
+      name: LD2450 Factory Reset
+      id: ld2450_factory_reset
+      entity_category: diagnostic
+      icon: mdi:backup-restore
+    restart:
+      name: LD2450 Restart
+      id: ld2450_restart
+      entity_category: diagnostic
+      icon: mdi:restart
+
+select:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    baud_rate:
+      name: LD2450 Baud Rate
+      id: ld2450_baud_rate
+      entity_category: config
+    zone_type:
+      name: LD2450 Zone Type
+      id: ld2450_zone_type
+      entity_category: config
+
+# Self-test phase 2: LD2450
+esphome:
+  on_boot:
+    - priority: 580
+      then:
+        - lambda: 'id(ld2450_required) = true;'
+        - lambda: |-
+            id(startup_phase) = 2;
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2450_fm_version).has_state() && std::string(id(ld2450_fm_version).state.c_str()) != "unknown";
+            timeout: 30s
+        - if:
+            condition:
+              lambda: |-
+                return !id(ld2450_fm_version).has_state() || std::string(id(ld2450_fm_version).state.c_str()) == "unknown";
+            then:
+              - lambda: |-
+                  id(startup_failed) = true;
+        - lambda: 'id(ld2450_checked) = true;'

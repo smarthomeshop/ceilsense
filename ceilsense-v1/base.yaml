@@ -75,8 +75,9 @@ esphome:
             condition:
               lambda: |-
                 const bool ld2412_ok = !id(ld2412_required) || id(ld2412_checked);
+                const bool ld2450_ok = !id(ld2450_required) || id(ld2450_checked);
                 const bool scd4x_ok = !id(scd4x_required) || id(scd4x_checked);
-                return ld2412_ok && scd4x_ok;
+                return ld2412_ok && ld2450_ok && scd4x_ok;
             timeout: 120s
         - light.turn_off: status_led
         - if:
@@ -156,6 +157,14 @@ globals:
     restore_value: no
     initial_value: "false"
   - id: scd4x_checked
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: ld2450_required
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: ld2450_checked
     type: bool
     restore_value: no
     initial_value: "false"

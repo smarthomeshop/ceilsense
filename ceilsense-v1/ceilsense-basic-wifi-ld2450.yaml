@@ -1,0 +1,20 @@
+substitutions:
+  device_name: ceilsense
+  friendly_name: "CeilSense"
+  ceilsense_hardware_version: "v1-basic-wifi-ld2450"
+  wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-ld2450-manifest.json"
+  eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2450-manifest.json"
+  default_network: "WiFi"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  base: !include base.yaml
+  net: !include wifi.yaml
+  ld2450: !include packages/ld2450.yaml
+
+dashboard_import:
+  package_import_url: github://Diondk/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2450.yaml@main
+  import_full_config: false
