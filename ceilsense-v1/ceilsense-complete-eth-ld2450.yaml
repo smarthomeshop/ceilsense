@@ -1,4 +1,4 @@
-# Complete Ethernet + LD2450 required (SCD4x required)
+# Complete Ethernet + LD2450 required (SCD4x required).
 substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
