@@ -208,3 +208,60 @@ jobs:
       esphome_version: latest
       directory_name: ceilsense-complete-eth-ld2412
       project_version: ${{ needs.update-versions.outputs.new_version }}
+
+  # LD2450 variants
+  publish-ceilsense-basic-wifi-ld2450:
+    name: Publish CeilSense Basic WiFi LD2450
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2450.yaml
+      name: CeilSense Basic WiFi LD2450
+      manifest_filename: ceilsense-basic-wifi-ld2450-manifest.json
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-wifi-ld2450
+      project_version: ${{ needs.update-versions.outputs.new_version }}
+
+  publish-ceilsense-basic-eth-ld2450:
+    name: Publish CeilSense Basic Ethernet LD2450
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-eth-ld2450.yaml
+      name: CeilSense Basic Ethernet LD2450
+      manifest_filename: ceilsense-basic-eth-ld2450-manifest.json
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-eth-ld2450
+      project_version: ${{ needs.update-versions.outputs.new_version }}
+
+  publish-ceilsense-complete-wifi-ld2450:
+    name: Publish CeilSense Complete WiFi LD2450
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2450.yaml
+      name: CeilSense Complete WiFi LD2450
+      manifest_filename: ceilsense-complete-wifi-ld2450-manifest.json
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-wifi-ld2450
+      project_version: ${{ needs.update-versions.outputs.new_version }}
+
+  publish-ceilsense-complete-eth-ld2450:
+    name: Publish CeilSense Complete Ethernet LD2450
+    needs: [update-versions]
+    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-eth-ld2450.yaml
+      name: CeilSense Complete Ethernet LD2450
+      manifest_filename: ceilsense-complete-eth-ld2450-manifest.json
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-eth-ld2450
+      project_version: ${{ needs.update-versions.outputs.new_version }}
