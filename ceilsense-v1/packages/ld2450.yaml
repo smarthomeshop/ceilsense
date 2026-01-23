@@ -2,8 +2,16 @@
 
 uart:
   id: uart_bus
-  tx_pin: GPIO18
-  rx_pin: GPIO17
+  tx_pin:
+    number: GPIO13
+    mode:
+      input: true
+      pullup: true
+  rx_pin:
+    number: GPIO14
+    mode:
+      input: true
+      pullup: true
   baud_rate: 256000
   parity: NONE
   stop_bits: 1
@@ -259,7 +267,7 @@ esphome:
   on_boot:
     - priority: 580
       then:
-        - lambda: 'id(ld2450_required) = true;'
+        - lambda: "id(ld2450_required) = true;"
         - lambda: |-
             id(startup_phase) = 2;
         - wait_until:
@@ -274,4 +282,4 @@ esphome:
             then:
               - lambda: |-
                   id(startup_failed) = true;
-        - lambda: 'id(ld2450_checked) = true;'
+        - lambda: "id(ld2450_checked) = true;"
