@@ -17,7 +17,7 @@ esphome:
         - light.turn_on:
             id: status_led
             brightness: 80%
-            effect: "Circulair Laad Effect"
+            effect: "Circular Loading Effect"
         # For Ethernet, wait for API connection instead of WiFi
         - wait_until:
             condition:

@@ -44,7 +44,7 @@ esphome:
         - light.turn_on:
             id: status_led
             brightness: 80%
-            effect: "Circulair Laad Effect"
+            effect: "Circular Loading Effect"
         - wait_until:
             condition:
               wifi.connected:

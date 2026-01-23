@@ -197,7 +197,7 @@ light:
     default_transition_length: 0s
     effects:
       - addressable_lambda:
-          name: "Circulair Laad Effect"
+          name: "Circular Loading Effect"
           update_interval: 100ms
           lambda: |-
             static int pos = 0;
@@ -266,12 +266,12 @@ sensor:
 # Buttons & switches
 switch:
   - platform: template
-    name: "LD2412 Debug Modus"
+    name: "LD2412 Debug Mode"
     id: debug_mode
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
   - platform: template
-    name: "Bluetooth na boot uitschakelen"
+    name: "Disable Bluetooth after boot"
     id: ble_disable_after_boot
     icon: mdi:bluetooth-off
     optimistic: true
@@ -279,7 +279,7 @@ switch:
 
 button:
   - platform: restart
-    name: "Apparaat herstarten"
+    name: "Restart Device"
     id: btn_restart
   - platform: factory_reset
     id: factory_reset_button

@@ -18,5 +18,5 @@ packages:
   scd4x: !include packages/scd4x.yaml
 
 dashboard_import:
-  package_import_url: github://Diondk/ceilsense/ceilsense-v1/ceilsense-complete-wifi-ld2450.yaml@main
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-wifi-ld2450.yaml@main
   import_full_config: false
