@@ -1,32 +1,27 @@
-# LD2450 package (UART + component via ESPHome core)
+# LD2450 package (using built-in ESPHome ld2450 component)
+# https://esphome.io/components/sensor/ld2450
 
 uart:
-  id: uart_bus
-  tx_pin:
-    number: GPIO13
-    mode:
-      input: true
-      pullup: true
-  rx_pin:
-    number: GPIO14
-    mode:
-      input: true
-      pullup: true
+  id: uart_ld2450
+  tx_pin: GPIO13
+  rx_pin: GPIO14
   baud_rate: 256000
   parity: NONE
   stop_bits: 1
 
 ld2450:
   id: ld2450_radar
-  uart_id: uart_bus
+  uart_id: uart_ld2450
+  throttle: 1000ms
 
 text_sensor:
   - platform: ld2450
+    ld2450_id: ld2450_radar
     version:
-      name: LD2450 FM Version
-      id: ld2450_fm_version
+      name: LD2450 Firmware Version
+      id: ld2450_fw_version
     mac_address:
-      name: LD2450 Mac
+      name: LD2450 MAC Address
       id: ld2450_mac
     target_1:
       direction:
@@ -43,6 +38,7 @@ text_sensor:
 
 binary_sensor:
   - platform: ld2450
+    ld2450_id: ld2450_radar
     has_target:
       name: Presence
       id: presence
@@ -70,6 +66,7 @@ binary_sensor:
 
 sensor:
   - platform: ld2450
+    ld2450_id: ld2450_radar
     target_count:
       name: Target Count
       id: target_count
@@ -180,7 +177,7 @@ number:
   - platform: ld2450
     ld2450_id: ld2450_radar
     presence_timeout:
-      name: Presence Timeout (s)
+      name: Presence Timeout
       id: ld2450_timeout
       entity_category: config
       icon: mdi:timer-outline
@@ -273,12 +270,12 @@ esphome:
         - wait_until:
             condition:
               lambda: |-
-                return id(ld2450_fm_version).has_state() && std::string(id(ld2450_fm_version).state.c_str()) != "unknown";
+                return id(ld2450_fw_version).has_state() && id(ld2450_fw_version).state.length() > 0;
             timeout: 30s
         - if:
             condition:
               lambda: |-
-                return !id(ld2450_fm_version).has_state() || std::string(id(ld2450_fm_version).state.c_str()) == "unknown";
+                return !id(ld2450_fw_version).has_state() || id(ld2450_fw_version).state.length() == 0;
             then:
               - lambda: |-
                   id(startup_failed) = true;
