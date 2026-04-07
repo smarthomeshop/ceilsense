@@ -289,6 +289,13 @@ light:
               it[index] = color;
             }
             pos = (pos + 1) % it.size();
+      - addressable_lambda:
+          name: "LD2412 Debug Distance"
+          update_interval: 500ms
+          lambda: |-
+            static bool on = false;
+            on = !on;
+            it.all() = on ? esphome::Color(255, 100, 0) : esphome::Color(0, 0, 0);
 
 sensor:
   - platform: internal_temperature
