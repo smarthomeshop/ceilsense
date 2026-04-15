@@ -27,17 +27,9 @@ esphome:
   on_boot:
     - priority: 610
       then:
-        - if:
-            condition:
-              lambda: 'return std::string("${default_network}") == std::string("Ethernet");'
-            then:
-              - logger.log: "OTA updates set to use ethernet firmware"
-              - lambda: 'id(firmware_update).set_source_url("${eth_update_manifest_url}");'
-              - component.update: firmware_update
-            else:
-              - logger.log: "OTA updates set to use wifi firmware"
-              - lambda: 'id(firmware_update).set_source_url("${wifi_update_manifest_url}");'
-              - component.update: firmware_update
+        - script.execute: sync_selected_firmware_source
+        - update.check:
+            id: firmware_update
     - priority: 540
       then:
         # Fase 4: BH1750 lux
@@ -250,6 +242,19 @@ update:
     id: firmware_update
     source: ${wifi_update_manifest_url}
 
+script:
+  - id: sync_selected_firmware_source
+    then:
+      - lambda: |-
+          std::string option = id(firmware_selector).current_option();
+          if (option == "Ethernet") {
+            ESP_LOGI("main", "OTA updates set to use Ethernet firmware");
+            id(firmware_update).set_source_url("${eth_update_manifest_url}");
+          } else {
+            ESP_LOGI("main", "OTA updates set to use WiFi firmware");
+            id(firmware_update).set_source_url("${wifi_update_manifest_url}");
+          }
+
 # I2C + sensors
 i2c:
   sda: GPIO11
@@ -300,6 +305,23 @@ button:
     name: "Factory Reset"
     entity_category: config
     disabled_by_default: true
+  - platform: template
+    name: "CeilSense Firmware Update"
+    id: update_firmware
+    entity_category: config
+    icon: "mdi:update"
+    on_press:
+      then:
+        - script.execute: sync_selected_firmware_source
+        - lambda: |-
+            ESP_LOGI("main", "Refreshing OTA metadata before installing selected firmware variant");
+        - update.check:
+            id: firmware_update
+        - lambda: |-
+            ESP_LOGI("main", "Starting OTA install for selected firmware variant");
+        - update.perform:
+            id: firmware_update
+            force_update: true
 
 # Firmware type selector (WiFi / Ethernet)
 select:
@@ -316,17 +338,9 @@ select:
     initial_option: ${default_network}
     on_value:
       then:
-        - if:
-            condition:
-              lambda: 'return id(firmware_selector).state == "Ethernet";'
-            then:
-              - logger.log: "OTA updates set to use ethernet firmware"
-              - lambda: 'id(firmware_update).set_source_url("${eth_update_manifest_url}");'
-              - component.update: firmware_update
-            else:
-              - logger.log: "OTA updates set to use wifi firmware"
-              - lambda: 'id(firmware_update).set_source_url("${wifi_update_manifest_url}");'
-              - component.update: firmware_update
+        - script.execute: sync_selected_firmware_source
+        - update.check:
+            id: firmware_update
 
 # Text sensors
 text_sensor:
@@ -353,7 +367,6 @@ text_sensor:
       return {"${ceilsense_hardware_version}"};
 
 # Script placeholder
-script:
   - id: play_stream
     then:
       - delay: 10ms

@@ -3,265 +3,671 @@ name: Build and Publish CeilSense firmware and website
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      force_all:
+        description: "Force build all versions"
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 3 20 * *"
   push:
     branches:
       - main
     paths:
-      - '**.yaml'
-    tags:
-      - 'v*'
+      - "CHANGELOG.md"
+      - ".github/**"
+      - "ceilsense-v1/**"
 
 permissions:
   contents: write
 
 jobs:
-  update-versions:
-    name: Update version numbers in YAML files
+  validate-changelog:
+    name: Validate changelog updates
     runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.update.outputs.new_version }}
-      version_changed: ${{ steps.update.outputs.version_changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update version numbers
-        id: update
+          fetch-depth: 0
+
+      - name: Require changelog update for firmware changes
         shell: bash
         run: |
           set -euo pipefail
 
-          CURRENT_VERSION=$(grep "project_main_version:" ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/')
-          echo "Current version: $CURRENT_VERSION"
-
-          NEW_VERSION="${CURRENT_VERSION}"
-          VERSION_CHANGED=false
-
-          # Determine VERSION from tag or fallback to increment version
-          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
-            NEW_VERSION="${GITHUB_REF_NAME#v}"
-            echo "Using tag VERSION=$NEW_VERSION"
-          else
-            # Extract version parts and increment
-            if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)(.*)$ ]]; then
-              MAJOR="${BASH_REMATCH[1]}"
-              MINOR="${BASH_REMATCH[2]}"
-              SUFFIX="${BASH_REMATCH[3]}"
-              NEW_MINOR=$((MINOR + 1))
-              NEW_VERSION="${MAJOR}.${NEW_MINOR}${SUFFIX}"
-            else
-              # Fallback for unexpected format
-              SHORTSHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
-              NEW_VERSION="dev-${SHORTSHA}"
-            fi
-            echo "Computed new VERSION=$NEW_VERSION"
+          if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "push" ]]; then
+            echo "Event does not require changelog validation"
+            exit 0
           fi
 
-          # Update version fields
-          sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${NEW_VERSION}\"/" ceilsense-v1/base.yaml
-          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${NEW_VERSION}\"/" ceilsense-v1/base.yaml
-
-          if git diff --quiet ceilsense-v1/base.yaml; then
-            echo "No version changes needed"
-            VERSION_CHANGED=false
-          else
-            echo "Version updated successfully"
-            VERSION_CHANGED=true
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.actor }}" == "github-actions[bot]" ]]; then
+            echo "Skipping changelog validation for GitHub Actions version bump commit"
+            exit 0
           fi
 
-          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "version_changed=${VERSION_CHANGED}" >> "$GITHUB_OUTPUT"
-      - name: Commit version updates
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.update.outputs.version_changed == 'true'
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_SHA=${{ github.event.pull_request.base.sha }}
+            HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          else
+            BASE_SHA=${{ github.event.before }}
+            HEAD_SHA=${{ github.sha }}
+          fi
+
+          if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            echo "First push detected; skipping changelog validation"
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          if ! echo "$CHANGED_FILES" | grep -Eq '^ceilsense-v1/.*\.ya?ml$'; then
+            echo "No firmware YAML changes detected; changelog update not required"
+            exit 0
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md updated"
+            exit 0
+          fi
+
+          echo "::error file=CHANGELOG.md::Firmware YAML changes require a customer-facing CHANGELOG.md update."
+          exit 1
+
+  detect-changes:
+    name: Detect changed firmware
+    needs: [validate-changelog]
+    runs-on: ubuntu-latest
+    outputs:
+      v1_changed: ${{ steps.changes.outputs.v1 }}
+      v1_build: ${{ steps.changes.outputs.v1_build }}
+      v1_version: ${{ steps.versions.outputs.v1_version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for firmware and workflow changes
+        id: changes
         shell: bash
         run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_all }}" == "true" ]]; then
+            echo "Force building all variants"
+            echo "v1=true" >> "$GITHUB_OUTPUT"
+            echo "v1_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "Scheduled build - rebuilding all variants with latest ESPHome"
+            echo "v1=true" >> "$GITHUB_OUTPUT"
+            echo "v1_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "Tag detected, building all variants"
+            echo "v1=true" >> "$GITHUB_OUTPUT"
+            echo "v1_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_SHA=${{ github.event.pull_request.base.sha }}
+            HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          else
+            BASE_SHA=${{ github.event.before }}
+            HEAD_SHA=${{ github.sha }}
+          fi
+
+          if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            echo "First push detected, building all variants"
+            echo "v1=true" >> "$GITHUB_OUTPUT"
+            echo "v1_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          V1_CHANGED=$(echo "$CHANGED_FILES" | grep -Eq '^ceilsense-v1/.*\.ya?ml$' && echo "true" || echo "false")
+          WORKFLOW_CHANGED=$(echo "$CHANGED_FILES" | grep -Eq '^\.github/' && echo "true" || echo "false")
+
+          echo "v1=$V1_CHANGED" >> "$GITHUB_OUTPUT"
+          if [[ "$WORKFLOW_CHANGED" == "true" ]]; then
+            echo "v1_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "v1_build=$V1_CHANGED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute next firmware version
+        id: versions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current_version=$(grep "project_main_version:" ceilsense-v1/base.yaml | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "1.0")
+          echo "Current version: $current_version"
+
+          if [[ "${{ steps.changes.outputs.v1 }}" != "true" ]]; then
+            echo "v1_version=$current_version" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "schedule" || "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "v1_version=$current_version" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)(.*)$ ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            suffix="${BASH_REMATCH[3]}"
+            new_minor=$((minor + 1))
+            new_version="${major}.${new_minor}${suffix}"
+          else
+            shortsha=$(echo "${GITHUB_SHA}" | cut -c1-7)
+            new_version="dev-${shortsha}"
+          fi
+
+          echo "v1_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version updates and create tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          create_tag() {
+            local tag_name=$1
+
+            if git rev-parse "$tag_name" >/dev/null 2>&1; then
+              echo "Tag $tag_name already exists, skipping"
+              return
+            fi
+
+            echo "Creating tag: $tag_name"
+            git tag -a "$tag_name" -m "Release $tag_name"
+            git push origin "$tag_name"
+          }
+
+          if [[ "${{ steps.changes.outputs.v1 }}" != "true" ]]; then
+            echo "No customer-facing firmware changes detected"
+            exit 0
+          fi
+
+          sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${{ steps.versions.outputs.v1_version }}\"/" ceilsense-v1/base.yaml
+          sed -i "s/^\s*project_version: \".*\"/  project_version: \"${{ steps.versions.outputs.v1_version }}\"/" ceilsense-v1/base.yaml
+
+          if git diff --quiet; then
+            echo "No version changes to commit"
+            exit 0
+          fi
+
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add ceilsense-v1/base.yaml
-          git commit -m "chore: update version to $(grep 'project_main_version:' ceilsense-v1/base.yaml | sed 's/.*: *"\([^"]*\)".*/\1/') [skip ci]" || exit 0
+          git commit -m "chore: update CeilSense V1 version to ${{ steps.versions.outputs.v1_version }} [skip ci]" || exit 0
           git push || echo "Nothing to push"
 
-  # Basic variants
-  publish-ceilsense-basic-wifi:
-    name: Publish CeilSense Basic WiFi
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+          if [[ ! "${{ steps.versions.outputs.v1_version }}" =~ ^dev- ]]; then
+            create_tag "ceilsense-v1-${{ steps.versions.outputs.v1_version }}"
+          fi
+
+  build-basic-wifi:
+    name: Build CeilSense Basic WiFi
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi.yaml
       name: CeilSense Basic WiFi
-      manifest_filename: ceilsense-basic-wifi-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-basic-wifi-ld2412:
-    name: Publish CeilSense Basic WiFi LD2412
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-wifi-ld2412:
+    name: Build CeilSense Basic WiFi LD2412
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml
       name: CeilSense Basic WiFi LD2412
-      manifest_filename: ceilsense-basic-wifi-ld2412-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi-ld2412
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-basic-wifi-ld2412-single:
-    name: Publish CeilSense Basic WiFi LD2412 Single
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-wifi-ld2412-single:
+    name: Build CeilSense Basic WiFi LD2412 Single
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi-ld2412-single.yaml
       name: CeilSense Basic WiFi LD2412 Single
-      manifest_filename: ceilsense-basic-wifi-ld2412-single-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi-ld2412-single
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-basic-eth:
-    name: Publish CeilSense Basic Ethernet
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-ethernet:
+    name: Build CeilSense Basic Ethernet
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-eth.yaml
       name: CeilSense Basic Ethernet
-      manifest_filename: ceilsense-basic-eth-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-basic-eth-ld2412:
-    name: Publish CeilSense Basic Ethernet LD2412
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-ethernet-ld2412:
+    name: Build CeilSense Basic Ethernet LD2412
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-eth-ld2412.yaml
       name: CeilSense Basic Ethernet LD2412
-      manifest_filename: ceilsense-basic-eth-ld2412-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth-ld2412
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  # Complete variants
-  publish-ceilsense-complete-wifi:
-    name: Publish CeilSense Complete WiFi
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-wifi:
+    name: Build CeilSense Complete WiFi
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-wifi.yaml
       name: CeilSense Complete WiFi
-      manifest_filename: ceilsense-complete-wifi-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-complete-wifi-ld2412:
-    name: Publish CeilSense Complete WiFi LD2412
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-wifi-ld2412:
+    name: Build CeilSense Complete WiFi LD2412
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml
       name: CeilSense Complete WiFi LD2412
-      manifest_filename: ceilsense-complete-wifi-ld2412-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi-ld2412
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-complete-eth:
-    name: Publish CeilSense Complete Ethernet
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-ethernet:
+    name: Build CeilSense Complete Ethernet
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-eth.yaml
       name: CeilSense Complete Ethernet
-      manifest_filename: ceilsense-complete-eth-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-eth
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-complete-eth-ld2412:
-    name: Publish CeilSense Complete Ethernet LD2412
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-ethernet-ld2412:
+    name: Build CeilSense Complete Ethernet LD2412
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-eth-ld2412.yaml
       name: CeilSense Complete Ethernet LD2412
-      manifest_filename: ceilsense-complete-eth-ld2412-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-eth-ld2412
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  # LD2450 variants
-  publish-ceilsense-basic-wifi-ld2450:
-    name: Publish CeilSense Basic WiFi LD2450
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-wifi-ld2450:
+    name: Build CeilSense Basic WiFi LD2450
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-wifi-ld2450.yaml
       name: CeilSense Basic WiFi LD2450
-      manifest_filename: ceilsense-basic-wifi-ld2450-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-wifi-ld2450
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-basic-eth-ld2450:
-    name: Publish CeilSense Basic Ethernet LD2450
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-basic-ethernet-ld2450:
+    name: Build CeilSense Basic Ethernet LD2450
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-basic-eth-ld2450.yaml
       name: CeilSense Basic Ethernet LD2450
-      manifest_filename: ceilsense-basic-eth-ld2450-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth-ld2450
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-complete-wifi-ld2450:
-    name: Publish CeilSense Complete WiFi LD2450
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-wifi-ld2450:
+    name: Build CeilSense Complete WiFi LD2450
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-wifi-ld2450.yaml
       name: CeilSense Complete WiFi LD2450
-      manifest_filename: ceilsense-complete-wifi-ld2450-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi-ld2450
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
 
-  publish-ceilsense-complete-eth-ld2450:
-    name: Publish CeilSense Complete Ethernet LD2450
-    needs: [update-versions]
-    if: always() && (needs.update-versions.result == 'success' || needs.update-versions.result == 'skipped')
+  build-complete-ethernet-ld2450:
+    name: Build CeilSense Complete Ethernet LD2450
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
       files: ceilsense-v1/ceilsense-complete-eth-ld2450.yaml
       name: CeilSense Complete Ethernet LD2450
-      manifest_filename: ceilsense-complete-eth-ld2450-manifest.json
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-eth-ld2450
-      project_version: ${{ needs.update-versions.outputs.new_version }}
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  publish-gh-pages:
+    name: Publish firmware to GitHub Pages
+    needs:
+      - detect-changes
+      - build-basic-wifi
+      - build-basic-wifi-ld2412
+      - build-basic-wifi-ld2412-single
+      - build-basic-ethernet
+      - build-basic-ethernet-ld2412
+      - build-complete-wifi
+      - build-complete-wifi-ld2412
+      - build-complete-ethernet
+      - build-complete-ethernet-ld2412
+      - build-basic-wifi-ld2450
+      - build-basic-ethernet-ld2450
+      - build-complete-wifi-ld2450
+      - build-complete-ethernet-ld2450
+    if: |
+      always() &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.build-basic-wifi.result == 'success' ||
+        needs.build-basic-wifi-ld2412.result == 'success' ||
+        needs.build-basic-wifi-ld2412-single.result == 'success' ||
+        needs.build-basic-ethernet.result == 'success' ||
+        needs.build-basic-ethernet-ld2412.result == 'success' ||
+        needs.build-complete-wifi.result == 'success' ||
+        needs.build-complete-wifi-ld2412.result == 'success' ||
+        needs.build-complete-ethernet.result == 'success' ||
+        needs.build-complete-ethernet-ld2412.result == 'success' ||
+        needs.build-basic-wifi-ld2450.result == 'success' ||
+        needs.build-basic-ethernet-ld2450.result == 'success' ||
+        needs.build-complete-wifi-ld2450.result == 'success' ||
+        needs.build-complete-ethernet-ld2450.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Download CeilSense Basic WiFi artifact
+        if: needs.build-basic-wifi.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi
+          path: output
+
+      - name: Download CeilSense Basic WiFi LD2412 artifact
+        if: needs.build-basic-wifi-ld2412.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi LD2412
+          path: output
+
+      - name: Download CeilSense Basic WiFi LD2412 Single artifact
+        if: needs.build-basic-wifi-ld2412-single.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi LD2412 Single
+          path: output
+
+      - name: Download CeilSense Basic Ethernet artifact
+        if: needs.build-basic-ethernet.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet
+          path: output
+
+      - name: Download CeilSense Basic Ethernet LD2412 artifact
+        if: needs.build-basic-ethernet-ld2412.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet LD2412
+          path: output
+
+      - name: Download CeilSense Complete WiFi artifact
+        if: needs.build-complete-wifi.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi
+          path: output
+
+      - name: Download CeilSense Complete WiFi LD2412 artifact
+        if: needs.build-complete-wifi-ld2412.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi LD2412
+          path: output
+
+      - name: Download CeilSense Complete Ethernet artifact
+        if: needs.build-complete-ethernet.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet
+          path: output
+
+      - name: Download CeilSense Complete Ethernet LD2412 artifact
+        if: needs.build-complete-ethernet-ld2412.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet LD2412
+          path: output
+
+      - name: Download CeilSense Basic WiFi LD2450 artifact
+        if: needs.build-basic-wifi-ld2450.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi LD2450
+          path: output
+
+      - name: Download CeilSense Basic Ethernet LD2450 artifact
+        if: needs.build-basic-ethernet-ld2450.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet LD2450
+          path: output
+
+      - name: Download CeilSense Complete WiFi LD2450 artifact
+        if: needs.build-complete-wifi-ld2450.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi LD2450
+          path: output
+
+      - name: Download CeilSense Complete Ethernet LD2450 artifact
+        if: needs.build-complete-ethernet-ld2450.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet LD2450
+          path: output
+
+      - name: Create manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          create_manifest() {
+            local variant_dir=$1
+            local manifest_name=$2
+            local display_name=$3
+            local version=$4
+            local manifest_file="output/${variant_dir}/manifest.json"
+
+            if [[ ! -f "$manifest_file" ]]; then
+              echo "Skipping ${variant_dir}; manifest.json not found"
+              return
+            fi
+
+            jq --arg dir "$variant_dir" --arg name "$display_name" --arg version "$version" '{
+              "name": $name,
+              "version": $version,
+              "home_assistant_domain": "esphome",
+              "new_install_skip_erase": false,
+              "builds": [.]
+            } |
+            .builds[0].ota.path = ($dir + "/" + .builds[0].ota.path) |
+            .builds[0].parts[].path = ($dir + "/" + .builds[0].parts[].path)' \
+              "$manifest_file" > "output/${manifest_name}"
+          }
+
+          create_manifest "ceilsense-basic-wifi" "ceilsense-basic-wifi-manifest.json" "CeilSense Basic WiFi" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-ld2412" "ceilsense-basic-wifi-ld2412-manifest.json" "CeilSense Basic WiFi LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-ld2412-single" "ceilsense-basic-wifi-ld2412-single-manifest.json" "CeilSense Basic WiFi LD2412 Single" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth" "ceilsense-basic-eth-manifest.json" "CeilSense Basic Ethernet" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth-ld2412" "ceilsense-basic-eth-ld2412-manifest.json" "CeilSense Basic Ethernet LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi" "ceilsense-complete-wifi-manifest.json" "CeilSense Complete WiFi" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi-ld2412" "ceilsense-complete-wifi-ld2412-manifest.json" "CeilSense Complete WiFi LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth" "ceilsense-complete-eth-manifest.json" "CeilSense Complete Ethernet" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth-ld2412" "ceilsense-complete-eth-ld2412-manifest.json" "CeilSense Complete Ethernet LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-ld2450" "ceilsense-basic-wifi-ld2450-manifest.json" "CeilSense Basic WiFi LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth-ld2450" "ceilsense-basic-eth-ld2450-manifest.json" "CeilSense Basic Ethernet LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi-ld2450" "ceilsense-complete-wifi-ld2450-manifest.json" "CeilSense Complete WiFi LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth-ld2450" "ceilsense-complete-eth-ld2450-manifest.json" "CeilSense Complete Ethernet LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+
+      - name: Create README for gh-pages
+        shell: bash
+        run: |
+          cat > output/README.md <<'EOF'
+          # CeilSense firmware – GitHub Pages branch (gh-pages)
+
+          This branch hosts the public firmware artifacts and manifests for CeilSense.
+          It is served via GitHub Pages and is intended to be consumed by:
+          - ESP Web Tools (browser-based flashing)
+          - OTA update integrations (using the JSON manifest)
+
+          ## Do not edit manually
+          Files in this branch are generated by the CI workflow in the default branch.
+          Any manual changes will be overwritten on the next publish.
+
+          ## Layout
+          - `ceilsense-basic-wifi/`
+          - `ceilsense-basic-wifi-ld2412/`
+          - `ceilsense-basic-wifi-ld2412-single/`
+          - `ceilsense-basic-eth/`
+          - `ceilsense-basic-eth-ld2412/`
+          - `ceilsense-complete-wifi/`
+          - `ceilsense-complete-wifi-ld2412/`
+          - `ceilsense-complete-eth/`
+          - `ceilsense-complete-eth-ld2412/`
+          - `ceilsense-basic-wifi-ld2450/`
+          - `ceilsense-basic-eth-ld2450/`
+          - `ceilsense-complete-wifi-ld2450/`
+          - `ceilsense-complete-eth-ld2450/`
+          - `*-manifest.json` aggregate manifests for OTA and ESP Web Tools
+          EOF
+
+      - name: Debug output structure
+        run: find output -maxdepth 2 -type f | sort
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: output
+          clean: false
+          force: false
+          attempt-limit: 6
+
+  create-releases:
+    name: Create GitHub releases
+    needs: [detect-changes]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Create release for changed hardware version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          create_release() {
+            local tag_name=$1
+            local title=$2
+            local heading="## [${title}]"
+
+            if gh release view "$tag_name" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "Release $tag_name already exists, skipping"
+              return
+            fi
+
+            awk -v heading="$heading" '
+              $0 == heading { found=1; next }
+              found && /^## \[/ { exit }
+              found { print }
+            ' CHANGELOG.md > release-notes.txt
+
+            if [[ ! -s release-notes.txt ]]; then
+              printf '%s\n\n%s\n' \
+                "Customer-facing firmware notes live in CHANGELOG.md." \
+                "Changelog: https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md" \
+                > release-notes.txt
+            fi
+
+            gh release create "$tag_name" \
+              -R "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --title "$title" \
+              --notes-file release-notes.txt
+          }
+
+          if [[ "${{ needs.detect-changes.outputs.v1_changed }}" == "true" && ! "${{ needs.detect-changes.outputs.v1_version }}" =~ ^dev- ]]; then
+            create_release "ceilsense-v1-${{ needs.detect-changes.outputs.v1_version }}" "CeilSense V1 ${{ needs.detect-changes.outputs.v1_version }}"
+          fi
