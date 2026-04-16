@@ -63,20 +63,38 @@ Quick start guide: https://smarthomeshop.io/quick-start-ceilsense
 
 ## Repository Layout
 
-- `ceilsense-v1/` — ESPHome configurations, packages, and customer-facing firmware variants
-- `.github/workflows/` — build, validation, manifest publishing, and release automation
-- `CHANGELOG.md` — customer-facing firmware release notes
-- `gh-pages` branch — public firmware files and manifests
+```text
+ceilsense/
+├── ceilsense-v1/           # V1 ESPHome configurations
+│   ├── base.yaml           # Shared configuration
+│   ├── wifi.yaml           # Shared WiFi package
+│   ├── eth.yaml            # Shared Ethernet package
+│   ├── packages/           # Optional radar and sensor packages
+│   ├── ceilsense-basic-wifi.yaml
+│   ├── ceilsense-basic-eth.yaml
+│   ├── ceilsense-complete-wifi.yaml
+│   └── ceilsense-complete-eth.yaml
+├── .github/workflows/      # Build and release automation
+├── CHANGELOG.md            # Customer-facing firmware notes
+└── images/
+```
 
-## Gallery
+## Firmware Downloads
 
-| Top view | In-ceiling |
-| --- | --- |
-| ![Top view](images/ceilsense-topview1.png) | ![In ceiling](images/ceilsense-in-ceiling-cutout.jpg) |
+Pre-built firmware manifests are published on the `gh-pages` branch.
 
-| Bottom view |
-| --- |
-| ![Bottom view](images/ceilsense-bottomview.png) |
+- Basic WiFi: `ceilsense-basic-wifi-manifest.json`
+- Basic Ethernet: `ceilsense-basic-eth-manifest.json`
+- Basic WiFi LD2412: `ceilsense-basic-wifi-ld2412-manifest.json`
+- Basic Ethernet LD2412: `ceilsense-basic-eth-ld2412-manifest.json`
+- Basic WiFi LD2450: `ceilsense-basic-wifi-ld2450-manifest.json`
+- Basic Ethernet LD2450: `ceilsense-basic-eth-ld2450-manifest.json`
+- Complete WiFi: `ceilsense-complete-wifi-manifest.json`
+- Complete Ethernet: `ceilsense-complete-eth-manifest.json`
+- Complete WiFi LD2412: `ceilsense-complete-wifi-ld2412-manifest.json`
+- Complete Ethernet LD2412: `ceilsense-complete-eth-ld2412-manifest.json`
+- Complete WiFi LD2450: `ceilsense-complete-wifi-ld2450-manifest.json`
+- Complete Ethernet LD2450: `ceilsense-complete-eth-ld2450-manifest.json`
 
 ## Contributing
 
@@ -91,3 +109,13 @@ PRs and issues are welcome. Please keep changes modular and follow ESPHome best 
 ## License
 
 This project is released under the CC BY-NC 4.0 license.
+
+## Gallery
+
+| Top view | In-ceiling |
+| --- | --- |
+| ![Top view](images/ceilsense-topview1.png) | ![In ceiling](images/ceilsense-in-ceiling-cutout.jpg) |
+
+| Bottom view |
+| --- |
+| ![Bottom view](images/ceilsense-bottomview.png) |
