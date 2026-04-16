@@ -2,45 +2,59 @@
 
 ![CeilSense](images/promo1.jpg)
 
-CeilSense is a ceiling-mounted, all-in-one room sensor designed to deliver reliable presence, air-quality and ambient measurements. It integrates seamlessly with Home Assistant via ESPHome and runs fully local (no cloud required).
+CeilSense is a ceiling-mounted ESPHome sensor for Home Assistant that combines presence detection, air-quality monitoring, and ambient sensing in one device. It is designed for fully local operation and supports both WiFi and Ethernet firmware variants.
 
-Learn more on our website: https://ceilsense.nl/en
+Product page: https://ceilsense.nl/en
 
-## Key features
+## How It Works
 
-- **Presence sensing (radar)**: Accurate motion/still detection with default included LD2412 mmwave module.
-- **Air quality**: CO₂, temperature, humidity (SCD41).
-- **Ambient**: Illuminance (BH1750), pressure/altitude (BMP3xx).
-- **Connectivity**: WiFi or Ethernet with included PoE variants.
-- **Provisioning**: Improv over BLE/Serial and captive portal (WiFi builds).
-- **Local only**: Works without cloud services; OTA supported via manifest on GitHub Pages.
-- **Manual OTA switching**: Choose **Firmware Type** in Home Assistant, then press **Firmware Update** to install the selected WiFi or Ethernet variant.
+CeilSense combines a radar presence sensor with environmental sensors in a ceiling-mounted device. Depending on the selected firmware variant, it connects over WiFi or Ethernet and sends its data directly to Home Assistant through ESPHome.
+
+## Key Features
+
+- Radar-based presence sensing
+- CO2, temperature, and humidity monitoring
+- Illuminance and pressure sensing
+- WiFi and Ethernet variants, including PoE-capable hardware
+- Captive portal and Improv provisioning on WiFi builds
+- Fully local operation with OTA updates through published manifests
+- Manual switching between WiFi and Ethernet firmware families
 
 ## Variants
 
-We publish multiple firmware variants for Basic and Complete hardware, including WiFi and Ethernet builds plus LD2412/LD2450 options. Each customer-facing variant has its own YAML in `ceilsense-v1/` and matching Web Tools manifest on the `gh-pages` branch.
+We publish multiple firmware variants for Basic and Complete hardware, including WiFi and Ethernet builds and different radar module options.
 
-## Getting started
+## Getting Started
 
-1. **Hardware**: Install the device in the ceiling and connect power (and Ethernet if applicable).
-2. **Flash firmware**:
-   - Use ESP Web Tools from our docs or GitHub Pages (per‑variant manifest).
-   - Or compile/flash locally with ESPHome CLI.
-3. **Onboarding**:
-   - WiFi builds support Improv (BLE/Serial) and captive portal.
-   - Ethernet builds connect automatically and wait for API.
-4. **Switch firmware later**:
-   - In Home Assistant, change **Firmware Type** to `WiFi` or `Ethernet`.
-   - Press **Firmware Update** to install the selected firmware family.
+1. Install the device in the ceiling and connect power.
+2. Flash the desired firmware with ESP Web Tools or ESPHome CLI.
+3. Use Improv or captive portal for WiFi onboarding where applicable.
+4. Ethernet builds connect automatically and wait for API access.
+5. To switch later, change `Firmware Type` in Home Assistant and run the firmware update entity.
 
-Please check for full documentation our quick start guide: https://smarthomeshop.io/quick-start-ceilsense
+Quick start guide: https://smarthomeshop.io/quick-start-ceilsense
 
-## Repository layout
+## Version History
 
-- `ceilsense-v1/` — ESPHome configurations (base, mixins, packages, and customer-facing firmware variants)
-- `.github/workflows/` — CI to build firmware, validate changelog updates, publish artifacts/manifests to `gh-pages`, and create GitHub Releases
-- `CHANGELOG.md` — customer-facing firmware release notes used for GitHub Releases
-- `gh-pages` branch — public firmware and manifests (for OTA and ESP Web Tools)
+- Customer-facing release notes: [CHANGELOG.md](CHANGELOG.md)
+- GitHub Releases: https://github.com/smarthomeshop/ceilsense/releases
+
+## Repository Layout
+
+- `ceilsense-v1/` — ESPHome configurations, packages, and customer-facing firmware variants
+- `.github/workflows/` — build, validation, manifest publishing, and release automation
+- `CHANGELOG.md` — customer-facing firmware release notes
+- `gh-pages` branch — public firmware files and manifests
+
+## Gallery
+
+| Top view | In-ceiling |
+| --- | --- |
+| ![Top view](images/ceilsense-topview1.png) | ![In ceiling](images/ceilsense-in-ceiling-cutout.jpg) |
+
+| Bottom view |
+| --- |
+| ![Bottom view](images/ceilsense-bottomview.png) |
 
 ## Contributing
 
@@ -50,18 +64,8 @@ PRs and issues are welcome. Please keep changes modular and follow ESPHome best 
 
 - Product info and guides: https://ceilsense.nl/en
 - Store: https://smarthomeshop.io
-- Community & support (Discord): https://smarthomeshop.io/discord
+- Community and support: https://smarthomeshop.io/discord
 
 ## License
 
-This project is released under the CC BY-NC 4.0 license (see `license`).
-
-## Gallery
-
-| Top view | In‑ceiling (cut‑out) |
-| --- | --- |
-| ![Top view](images/ceilsense-topview1.png) | ![In ceiling](images/ceilsense-in-ceiling-cutout.jpg) |
-
-| Bottom view |
-| --- |
-| ![Bottom view](images/ceilsense-bottomview.png) |
+This project is released under the CC BY-NC 4.0 license.
