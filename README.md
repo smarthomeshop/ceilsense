@@ -20,9 +20,31 @@ CeilSense combines a radar presence sensor with environmental sensors in a ceili
 - Fully local operation with OTA updates through published manifests
 - Manual switching between WiFi and Ethernet firmware families
 
+## Hardware Versions
+
+| Version | Chip | Connectivity | Description |
+|---------|------|--------------|-------------|
+| V1 Basic | ESP32-S3 | WiFi and Ethernet | Presence and ambient sensing platform without SCD4x CO2 module |
+| V1 Complete | ESP32-S3 | WiFi and Ethernet | Full sensor platform with SCD4x CO2 support |
+
 ## Variants
 
-We publish multiple firmware variants for Basic and Complete hardware, including WiFi and Ethernet builds and different radar module options.
+We publish customer-facing variants for Basic and Complete hardware, with WiFi or Ethernet networking and optional LD2412 or LD2450 radar support.
+
+| Hardware | Variant | Description |
+|----------|---------|-------------|
+| V1 Basic (ESP32-S3) | WiFi | WiFi build without external radar package |
+| V1 Basic (ESP32-S3) | WiFi + LD2412 | WiFi build with LD2412 presence radar |
+| V1 Basic (ESP32-S3) | WiFi + LD2450 | WiFi build with LD2450 multi-target radar |
+| V1 Basic (ESP32-S3) | Ethernet | Ethernet build without external radar package |
+| V1 Basic (ESP32-S3) | Ethernet + LD2412 | Ethernet build with LD2412 presence radar |
+| V1 Basic (ESP32-S3) | Ethernet + LD2450 | Ethernet build with LD2450 multi-target radar |
+| V1 Complete (ESP32-S3) | WiFi | WiFi build with SCD4x CO2 support |
+| V1 Complete (ESP32-S3) | WiFi + LD2412 | WiFi build with SCD4x and LD2412 presence radar |
+| V1 Complete (ESP32-S3) | WiFi + LD2450 | WiFi build with SCD4x and LD2450 multi-target radar |
+| V1 Complete (ESP32-S3) | Ethernet | Ethernet build with SCD4x CO2 support |
+| V1 Complete (ESP32-S3) | Ethernet + LD2412 | Ethernet build with SCD4x and LD2412 presence radar |
+| V1 Complete (ESP32-S3) | Ethernet + LD2450 | Ethernet build with SCD4x and LD2450 multi-target radar |
 
 ## Getting Started
 
