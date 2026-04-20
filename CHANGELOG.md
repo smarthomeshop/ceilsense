@@ -6,7 +6,7 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
+- Fixed a build failure with ESPHome 2026.4.0 where `play_stream` was incorrectly nested under `text_sensor`, causing validation errors on devices using the LD2450 variant.
 
 ## [CeilSense V1 1.28] - 2026-04-15
 
