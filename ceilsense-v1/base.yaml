@@ -366,7 +366,7 @@ text_sensor:
     lambda: |-
       return {"${ceilsense_hardware_version}"};
 
-# Script placeholder
+script:
   - id: play_stream
     then:
       - delay: 10ms
