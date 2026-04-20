@@ -254,6 +254,9 @@ script:
             ESP_LOGI("main", "OTA updates set to use WiFi firmware");
             id(firmware_update).set_source_url("${wifi_update_manifest_url}");
           }
+  - id: play_stream
+    then:
+      - delay: 10ms
 
 # I2C + sensors
 i2c:
@@ -365,8 +368,3 @@ text_sensor:
     update_interval: 5h
     lambda: |-
       return {"${ceilsense_hardware_version}"};
-
-script:
-  - id: play_stream
-    then:
-      - delay: 10ms
