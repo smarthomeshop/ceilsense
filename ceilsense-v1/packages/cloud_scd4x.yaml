@@ -1,0 +1,18 @@
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          if (id(scd41_co2).has_state() && !isnan(id(scd41_co2).state)) {
+            id(cloud_has_scd4x) = true;
+            id(cloud_scd4x_co2) = id(scd41_co2).state;
+          }
+
+          if (id(scd41_temperature).has_state() && !isnan(id(scd41_temperature).state)) {
+            id(cloud_has_scd4x) = true;
+            id(cloud_scd4x_temperature) = id(scd41_temperature).state;
+          }
+
+          if (id(scd41_humidity).has_state() && !isnan(id(scd41_humidity).state)) {
+            id(cloud_has_scd4x) = true;
+            id(cloud_scd4x_humidity) = id(scd41_humidity).state;
+          }

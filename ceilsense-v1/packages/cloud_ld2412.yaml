@@ -1,0 +1,6 @@
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          id(cloud_has_presence) = true;
+          id(cloud_occupancy) = id(presence).state;

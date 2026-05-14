@@ -248,6 +248,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-basic-wifi-cloud:
+    name: Build CeilSense Basic WiFi Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-wifi-cloud.yaml
+      name: CeilSense Basic WiFi Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-wifi-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-basic-wifi-ld2412-single:
     name: Build CeilSense Basic WiFi LD2412 Single
     needs: [detect-changes]
@@ -276,6 +290,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-basic-ethernet-cloud:
+    name: Build CeilSense Basic Ethernet Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-eth-cloud.yaml
+      name: CeilSense Basic Ethernet Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-eth-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-basic-ethernet-ld2412:
     name: Build CeilSense Basic Ethernet LD2412
     needs: [detect-changes]
@@ -287,6 +315,34 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth-ld2412
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  build-basic-wifi-ld2412-cloud:
+    name: Build CeilSense Basic WiFi LD2412 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2412-cloud.yaml
+      name: CeilSense Basic WiFi LD2412 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-wifi-ld2412-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  build-basic-ethernet-ld2412-cloud:
+    name: Build CeilSense Basic Ethernet LD2412 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-eth-ld2412-cloud.yaml
+      name: CeilSense Basic Ethernet LD2412 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-eth-ld2412-cloud
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
@@ -304,6 +360,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-complete-wifi-cloud:
+    name: Build CeilSense Complete WiFi Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-wifi-cloud.yaml
+      name: CeilSense Complete WiFi Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-wifi-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-complete-wifi-ld2412:
     name: Build CeilSense Complete WiFi LD2412
     needs: [detect-changes]
@@ -315,6 +385,20 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-wifi-ld2412
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  build-complete-wifi-ld2412-cloud:
+    name: Build CeilSense Complete WiFi LD2412 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2412-cloud.yaml
+      name: CeilSense Complete WiFi LD2412 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-wifi-ld2412-cloud
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
@@ -332,6 +416,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-complete-ethernet-cloud:
+    name: Build CeilSense Complete Ethernet Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-eth-cloud.yaml
+      name: CeilSense Complete Ethernet Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-eth-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-complete-ethernet-ld2412:
     name: Build CeilSense Complete Ethernet LD2412
     needs: [detect-changes]
@@ -343,6 +441,20 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-complete-eth-ld2412
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  build-complete-ethernet-ld2412-cloud:
+    name: Build CeilSense Complete Ethernet LD2412 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-eth-ld2412-cloud.yaml
+      name: CeilSense Complete Ethernet LD2412 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-eth-ld2412-cloud
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
@@ -360,6 +472,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-basic-wifi-ld2450-cloud:
+    name: Build CeilSense Basic WiFi LD2450 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2450-cloud.yaml
+      name: CeilSense Basic WiFi LD2450 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-wifi-ld2450-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-basic-ethernet-ld2450:
     name: Build CeilSense Basic Ethernet LD2450
     needs: [detect-changes]
@@ -371,6 +497,20 @@ jobs:
       clean: false
       esphome_version: latest
       directory_name: ceilsense-basic-eth-ld2450
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
+  build-basic-ethernet-ld2450-cloud:
+    name: Build CeilSense Basic Ethernet LD2450 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-basic-eth-ld2450-cloud.yaml
+      name: CeilSense Basic Ethernet LD2450 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-basic-eth-ld2450-cloud
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
@@ -388,6 +528,20 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-complete-wifi-ld2450-cloud:
+    name: Build CeilSense Complete WiFi LD2450 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2450-cloud.yaml
+      name: CeilSense Complete WiFi LD2450 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-wifi-ld2450-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   build-complete-ethernet-ld2450:
     name: Build CeilSense Complete Ethernet LD2450
     needs: [detect-changes]
@@ -402,23 +556,49 @@ jobs:
       project_version: ${{ needs.detect-changes.outputs.v1_version }}
       base_path: ceilsense-v1
 
+  build-complete-ethernet-ld2450-cloud:
+    name: Build CeilSense Complete Ethernet LD2450 Cloud
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.v1_build == 'true'
+    uses: ./.github/workflows/esphome-build.yml
+    with:
+      files: ceilsense-v1/ceilsense-complete-eth-ld2450-cloud.yaml
+      name: CeilSense Complete Ethernet LD2450 Cloud
+      clean: false
+      esphome_version: latest
+      directory_name: ceilsense-complete-eth-ld2450-cloud
+      project_version: ${{ needs.detect-changes.outputs.v1_version }}
+      base_path: ceilsense-v1
+
   publish-gh-pages:
     name: Publish firmware to GitHub Pages
     needs:
       - detect-changes
       - build-basic-wifi
       - build-basic-wifi-ld2412
+      - build-basic-wifi-cloud
+      - build-basic-wifi-ld2412-cloud
       - build-basic-wifi-ld2412-single
       - build-basic-ethernet
       - build-basic-ethernet-ld2412
+      - build-basic-ethernet-cloud
+      - build-basic-ethernet-ld2412-cloud
       - build-complete-wifi
       - build-complete-wifi-ld2412
+      - build-complete-wifi-cloud
+      - build-complete-wifi-ld2412-cloud
       - build-complete-ethernet
       - build-complete-ethernet-ld2412
+      - build-complete-ethernet-cloud
+      - build-complete-ethernet-ld2412-cloud
       - build-basic-wifi-ld2450
       - build-basic-ethernet-ld2450
+      - build-basic-wifi-ld2450-cloud
+      - build-basic-ethernet-ld2450-cloud
       - build-complete-wifi-ld2450
       - build-complete-ethernet-ld2450
+      - build-complete-wifi-ld2450-cloud
+      - build-complete-ethernet-ld2450-cloud
     if: |
       always() &&
       github.event_name != 'pull_request' &&
@@ -426,17 +606,29 @@ jobs:
       (
         needs.build-basic-wifi.result == 'success' ||
         needs.build-basic-wifi-ld2412.result == 'success' ||
+        needs.build-basic-wifi-cloud.result == 'success' ||
+        needs.build-basic-wifi-ld2412-cloud.result == 'success' ||
         needs.build-basic-wifi-ld2412-single.result == 'success' ||
         needs.build-basic-ethernet.result == 'success' ||
         needs.build-basic-ethernet-ld2412.result == 'success' ||
+        needs.build-basic-ethernet-cloud.result == 'success' ||
+        needs.build-basic-ethernet-ld2412-cloud.result == 'success' ||
         needs.build-complete-wifi.result == 'success' ||
         needs.build-complete-wifi-ld2412.result == 'success' ||
+        needs.build-complete-wifi-cloud.result == 'success' ||
+        needs.build-complete-wifi-ld2412-cloud.result == 'success' ||
         needs.build-complete-ethernet.result == 'success' ||
         needs.build-complete-ethernet-ld2412.result == 'success' ||
+        needs.build-complete-ethernet-cloud.result == 'success' ||
+        needs.build-complete-ethernet-ld2412-cloud.result == 'success' ||
         needs.build-basic-wifi-ld2450.result == 'success' ||
         needs.build-basic-ethernet-ld2450.result == 'success' ||
+        needs.build-basic-wifi-ld2450-cloud.result == 'success' ||
+        needs.build-basic-ethernet-ld2450-cloud.result == 'success' ||
         needs.build-complete-wifi-ld2450.result == 'success' ||
-        needs.build-complete-ethernet-ld2450.result == 'success'
+        needs.build-complete-ethernet-ld2450.result == 'success' ||
+        needs.build-complete-wifi-ld2450-cloud.result == 'success' ||
+        needs.build-complete-ethernet-ld2450-cloud.result == 'success'
       )
     runs-on: ubuntu-latest
     steps:
@@ -457,6 +649,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: CeilSense Basic WiFi LD2412
+          path: output
+
+      - name: Download CeilSense Basic WiFi Cloud artifact
+        if: needs.build-basic-wifi-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi Cloud
+          path: output
+
+      - name: Download CeilSense Basic WiFi LD2412 Cloud artifact
+        if: needs.build-basic-wifi-ld2412-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi LD2412 Cloud
           path: output
 
       - name: Download CeilSense Basic WiFi LD2412 Single artifact
@@ -480,6 +686,20 @@ jobs:
           name: CeilSense Basic Ethernet LD2412
           path: output
 
+      - name: Download CeilSense Basic Ethernet Cloud artifact
+        if: needs.build-basic-ethernet-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet Cloud
+          path: output
+
+      - name: Download CeilSense Basic Ethernet LD2412 Cloud artifact
+        if: needs.build-basic-ethernet-ld2412-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet LD2412 Cloud
+          path: output
+
       - name: Download CeilSense Complete WiFi artifact
         if: needs.build-complete-wifi.result == 'success'
         uses: actions/download-artifact@v4
@@ -492,6 +712,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: CeilSense Complete WiFi LD2412
+          path: output
+
+      - name: Download CeilSense Complete WiFi Cloud artifact
+        if: needs.build-complete-wifi-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi Cloud
+          path: output
+
+      - name: Download CeilSense Complete WiFi LD2412 Cloud artifact
+        if: needs.build-complete-wifi-ld2412-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi LD2412 Cloud
           path: output
 
       - name: Download CeilSense Complete Ethernet artifact
@@ -508,6 +742,20 @@ jobs:
           name: CeilSense Complete Ethernet LD2412
           path: output
 
+      - name: Download CeilSense Complete Ethernet Cloud artifact
+        if: needs.build-complete-ethernet-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet Cloud
+          path: output
+
+      - name: Download CeilSense Complete Ethernet LD2412 Cloud artifact
+        if: needs.build-complete-ethernet-ld2412-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet LD2412 Cloud
+          path: output
+
       - name: Download CeilSense Basic WiFi LD2450 artifact
         if: needs.build-basic-wifi-ld2450.result == 'success'
         uses: actions/download-artifact@v4
@@ -522,6 +770,20 @@ jobs:
           name: CeilSense Basic Ethernet LD2450
           path: output
 
+      - name: Download CeilSense Basic WiFi LD2450 Cloud artifact
+        if: needs.build-basic-wifi-ld2450-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic WiFi LD2450 Cloud
+          path: output
+
+      - name: Download CeilSense Basic Ethernet LD2450 Cloud artifact
+        if: needs.build-basic-ethernet-ld2450-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Basic Ethernet LD2450 Cloud
+          path: output
+
       - name: Download CeilSense Complete WiFi LD2450 artifact
         if: needs.build-complete-wifi-ld2450.result == 'success'
         uses: actions/download-artifact@v4
@@ -534,6 +796,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: CeilSense Complete Ethernet LD2450
+          path: output
+
+      - name: Download CeilSense Complete WiFi LD2450 Cloud artifact
+        if: needs.build-complete-wifi-ld2450-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete WiFi LD2450 Cloud
+          path: output
+
+      - name: Download CeilSense Complete Ethernet LD2450 Cloud artifact
+        if: needs.build-complete-ethernet-ld2450-cloud.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: CeilSense Complete Ethernet LD2450 Cloud
           path: output
 
       - name: Create manifests
@@ -567,17 +843,29 @@ jobs:
 
           create_manifest "ceilsense-basic-wifi" "ceilsense-basic-wifi-manifest.json" "CeilSense Basic WiFi" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-wifi-ld2412" "ceilsense-basic-wifi-ld2412-manifest.json" "CeilSense Basic WiFi LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-cloud" "ceilsense-basic-wifi-cloud-manifest.json" "CeilSense Basic WiFi Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-ld2412-cloud" "ceilsense-basic-wifi-ld2412-cloud-manifest.json" "CeilSense Basic WiFi LD2412 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-wifi-ld2412-single" "ceilsense-basic-wifi-ld2412-single-manifest.json" "CeilSense Basic WiFi LD2412 Single" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-eth" "ceilsense-basic-eth-manifest.json" "CeilSense Basic Ethernet" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-eth-ld2412" "ceilsense-basic-eth-ld2412-manifest.json" "CeilSense Basic Ethernet LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth-cloud" "ceilsense-basic-eth-cloud-manifest.json" "CeilSense Basic Ethernet Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth-ld2412-cloud" "ceilsense-basic-eth-ld2412-cloud-manifest.json" "CeilSense Basic Ethernet LD2412 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-wifi" "ceilsense-complete-wifi-manifest.json" "CeilSense Complete WiFi" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-wifi-ld2412" "ceilsense-complete-wifi-ld2412-manifest.json" "CeilSense Complete WiFi LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi-cloud" "ceilsense-complete-wifi-cloud-manifest.json" "CeilSense Complete WiFi Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi-ld2412-cloud" "ceilsense-complete-wifi-ld2412-cloud-manifest.json" "CeilSense Complete WiFi LD2412 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-eth" "ceilsense-complete-eth-manifest.json" "CeilSense Complete Ethernet" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-eth-ld2412" "ceilsense-complete-eth-ld2412-manifest.json" "CeilSense Complete Ethernet LD2412" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth-cloud" "ceilsense-complete-eth-cloud-manifest.json" "CeilSense Complete Ethernet Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth-ld2412-cloud" "ceilsense-complete-eth-ld2412-cloud-manifest.json" "CeilSense Complete Ethernet LD2412 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-wifi-ld2450" "ceilsense-basic-wifi-ld2450-manifest.json" "CeilSense Basic WiFi LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-basic-eth-ld2450" "ceilsense-basic-eth-ld2450-manifest.json" "CeilSense Basic Ethernet LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-wifi-ld2450-cloud" "ceilsense-basic-wifi-ld2450-cloud-manifest.json" "CeilSense Basic WiFi LD2450 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-basic-eth-ld2450-cloud" "ceilsense-basic-eth-ld2450-cloud-manifest.json" "CeilSense Basic Ethernet LD2450 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-wifi-ld2450" "ceilsense-complete-wifi-ld2450-manifest.json" "CeilSense Complete WiFi LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
           create_manifest "ceilsense-complete-eth-ld2450" "ceilsense-complete-eth-ld2450-manifest.json" "CeilSense Complete Ethernet LD2450" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-wifi-ld2450-cloud" "ceilsense-complete-wifi-ld2450-cloud-manifest.json" "CeilSense Complete WiFi LD2450 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
+          create_manifest "ceilsense-complete-eth-ld2450-cloud" "ceilsense-complete-eth-ld2450-cloud-manifest.json" "CeilSense Complete Ethernet LD2450 Cloud" "${{ needs.detect-changes.outputs.v1_version }}"
 
       - name: Create README for gh-pages
         shell: bash
@@ -597,17 +885,29 @@ jobs:
           ## Layout
           - `ceilsense-basic-wifi/`
           - `ceilsense-basic-wifi-ld2412/`
+          - `ceilsense-basic-wifi-cloud/`
+          - `ceilsense-basic-wifi-ld2412-cloud/`
           - `ceilsense-basic-wifi-ld2412-single/`
           - `ceilsense-basic-eth/`
           - `ceilsense-basic-eth-ld2412/`
+          - `ceilsense-basic-eth-cloud/`
+          - `ceilsense-basic-eth-ld2412-cloud/`
           - `ceilsense-complete-wifi/`
           - `ceilsense-complete-wifi-ld2412/`
+          - `ceilsense-complete-wifi-cloud/`
+          - `ceilsense-complete-wifi-ld2412-cloud/`
           - `ceilsense-complete-eth/`
           - `ceilsense-complete-eth-ld2412/`
+          - `ceilsense-complete-eth-cloud/`
+          - `ceilsense-complete-eth-ld2412-cloud/`
           - `ceilsense-basic-wifi-ld2450/`
           - `ceilsense-basic-eth-ld2450/`
+          - `ceilsense-basic-wifi-ld2450-cloud/`
+          - `ceilsense-basic-eth-ld2450-cloud/`
           - `ceilsense-complete-wifi-ld2450/`
           - `ceilsense-complete-eth-ld2450/`
+          - `ceilsense-complete-wifi-ld2450-cloud/`
+          - `ceilsense-complete-eth-ld2450-cloud/`
           - `*-manifest.json` aggregate manifests for OTA and ESP Web Tools
           EOF
 

@@ -1,4 +1,3 @@
-# Basic WiFi + LD2450 required (SCD4x required).
 substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
@@ -7,8 +6,8 @@ substitutions:
   eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2450-manifest.json"
   wifi_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-ld2450-cloud-manifest.json"
   eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2450-cloud-manifest.json"
-  default_network: "WiFi (local)"
-  cloud_enabled: "false"
+  default_network: "WiFi + SmartHomeShop App (cloud)"
+  cloud_enabled: "true"
 
 esphome:
   name: ${device_name}
@@ -17,8 +16,10 @@ esphome:
 packages:
   base: !include base.yaml
   net: !include wifi.yaml
+  cloud: !include packages/cloud_core.yaml
+  cloud_presence: !include packages/cloud_ld2450.yaml
   ld2450: !include packages/ld2450.yaml
 
 dashboard_import:
-  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2450.yaml@main
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2450-cloud.yaml@main
   import_full_config: false

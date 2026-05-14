@@ -1,0 +1,405 @@
+substitutions:
+  cloud_enabled: "true"
+  cloud_api_url: "https://api.smarthomeshop.io"
+  cloud_api_version: "v1"
+  cloud_sync_interval: "60s"
+
+globals:
+  - id: cloud_device_token
+    type: std::string
+    restore_value: true
+    initial_value: '""'
+  - id: cloud_device_id
+    type: std::string
+    restore_value: true
+    initial_value: '""'
+  - id: cloud_is_registered
+    type: bool
+    restore_value: true
+    initial_value: "false"
+  - id: cloud_is_registering
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_last_sync_success
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_sync_failures
+    type: int
+    restore_value: false
+    initial_value: "0"
+  - id: cloud_first_sync_timestamp
+    type: uint32_t
+    restore_value: true
+    initial_value: "0"
+  - id: cloud_has_scd4x
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_scd4x_temperature
+    type: float
+    restore_value: false
+    initial_value: "NAN"
+  - id: cloud_scd4x_humidity
+    type: float
+    restore_value: false
+    initial_value: "NAN"
+  - id: cloud_scd4x_co2
+    type: float
+    restore_value: false
+    initial_value: "NAN"
+  - id: cloud_has_presence
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_has_zone_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_zone1_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_zone2_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_zone3_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_zone4_occupancy
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_has_zone_counts
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: cloud_zone1_target_count
+    type: int
+    restore_value: false
+    initial_value: "-1"
+  - id: cloud_zone2_target_count
+    type: int
+    restore_value: false
+    initial_value: "-1"
+  - id: cloud_zone3_target_count
+    type: int
+    restore_value: false
+    initial_value: "-1"
+  - id: cloud_zone4_target_count
+    type: int
+    restore_value: false
+    initial_value: "-1"
+
+binary_sensor:
+  - platform: template
+    id: cloud_connected
+    name: "${friendly_name} Cloud Connected"
+    icon: "mdi:cloud-check"
+    entity_category: diagnostic
+    lambda: |-
+      return id(cloud_is_registered) && id(cloud_last_sync_success);
+
+sensor:
+  - platform: template
+    id: cloud_sync_failure_count
+    name: "${friendly_name} Cloud Sync Failures"
+    entity_category: diagnostic
+    icon: "mdi:alert-circle"
+    accuracy_decimals: 0
+    lambda: |-
+      return id(cloud_sync_failures);
+    update_interval: 60s
+
+text_sensor:
+  - platform: template
+    id: cloud_device_id_sensor
+    name: "${friendly_name} Cloud Device ID"
+    entity_category: diagnostic
+    icon: "mdi:cloud-outline"
+    lambda: |-
+      if (id(cloud_device_id).length() > 0) {
+        return id(cloud_device_id);
+      }
+      return {"Not registered"};
+    update_interval: 60s
+
+  - platform: template
+    id: cloud_status_text
+    name: "${friendly_name} Cloud Status"
+    entity_category: diagnostic
+    icon: "mdi:cloud-question"
+    lambda: |-
+      if (!id(cloud_is_registered)) {
+        return {"Registering..."};
+      }
+      if (id(cloud_device_token).length() == 0) {
+        return {"No token"};
+      }
+      if (id(cloud_sync_failures) > 10) {
+        return {"Error: Too many failures"};
+      }
+      if (id(cloud_last_sync_success)) {
+        return {"Connected"};
+      }
+      return {"Syncing..."};
+    update_interval: 15s
+
+button:
+  - platform: template
+    id: cloud_reset_button
+    name: "${friendly_name} Reset Cloud"
+    icon: "mdi:cloud-off"
+    entity_category: config
+    on_press:
+      - script.execute: cloud_reset
+
+script:
+  - id: cloud_register
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: "return id(cloud_is_registering);"
+          then:
+            - logger.log:
+                level: DEBUG
+                format: "Registration already in progress, skipping"
+            - script.stop: cloud_register
+
+      - lambda: "id(cloud_is_registering) = true;"
+
+      - logger.log:
+          level: INFO
+          format: "Starting cloud registration..."
+
+      - wait_until:
+          condition:
+            lambda: "return id(wifi_mac).has_state();"
+          timeout: 30s
+
+      - wait_until:
+          condition:
+            lambda: "return id(wifi_ip).has_state();"
+          timeout: 30s
+
+      - http_request.post:
+          url: "${cloud_api_url}/api/${cloud_api_version}/devices/register"
+          request_headers:
+            Content-Type: "application/json"
+            User-Agent: "CeilSense/${project_version}"
+            Accept: "application/json"
+          json: |-
+            root["mac_address"] = id(wifi_mac).state;
+            root["hardware_version"] = "${ceilsense_hardware_version}";
+            root["firmware_version"] = "${project_version}";
+            root["product"] = "ceilsense";
+            if (id(wifi_ip).has_state()) {
+              root["local_ip"] = id(wifi_ip).state;
+            }
+          capture_response: true
+          max_response_buffer_size: 512
+          on_response:
+            then:
+              - lambda: |-
+                  id(cloud_is_registering) = false;
+
+                  if (response->status_code == 200 || response->status_code == 201) {
+                    json::parse_json(body, [](JsonObject root) -> bool {
+                      if (root["device_id"].is<const char *>() && root["token"].is<const char *>()) {
+                        id(cloud_device_id) = root["device_id"].as<std::string>();
+                        id(cloud_device_token) = root["token"].as<std::string>();
+                        id(cloud_is_registered) = true;
+                        id(cloud_sync_failures) = 0;
+                        return true;
+                      }
+
+                      return false;
+                    });
+                  } else if (response->status_code == 422) {
+                    id(cloud_sync_failures)++;
+                  } else if (response->status_code == 429) {
+                    id(cloud_sync_failures) += 5;
+                  } else {
+                    id(cloud_sync_failures)++;
+                  }
+          on_error:
+            then:
+              - lambda: |-
+                  id(cloud_sync_failures)++;
+                  id(cloud_is_registering) = false;
+
+  - id: cloud_send_batch
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: "return !id(cloud_is_registered);"
+          then:
+            - script.execute: cloud_register
+            - script.stop: cloud_send_batch
+
+      - if:
+          condition:
+            lambda: "return id(cloud_device_token).length() == 0;"
+          then:
+            - lambda: "id(cloud_is_registered) = false;"
+            - script.execute: cloud_register
+            - script.stop: cloud_send_batch
+
+      - if:
+          condition:
+            lambda: "return id(cloud_sync_failures) > 10;"
+          then:
+            - delay: 10min
+            - lambda: "id(cloud_sync_failures) = 0;"
+            - script.stop: cloud_send_batch
+
+      - lambda: "id(cloud_last_sync_success) = false;"
+
+      - http_request.post:
+          url: "${cloud_api_url}/api/${cloud_api_version}/devices/ingest"
+          request_headers:
+            Content-Type: "application/json"
+            Authorization: !lambda |-
+              static std::string auth;
+              auth = "Bearer ";
+              auth += id(cloud_device_token);
+              return auth.c_str();
+            User-Agent: "CeilSense/${project_version}"
+            Accept: "application/json"
+          capture_response: true
+          max_response_buffer_size: 256
+          json: |-
+            root["device_id"] = id(cloud_device_id);
+            root["timestamp"] = id(homeassistant_time).now().is_valid()
+              ? id(homeassistant_time).now().timestamp
+              : id(sntp_time).now().timestamp;
+
+            if (id(cloud_has_scd4x) && !isnan(id(cloud_scd4x_temperature))) {
+              root["temperature_c"] = id(cloud_scd4x_temperature);
+            } else if (id(bmp_temperature).has_state() && !isnan(id(bmp_temperature).state)) {
+              root["temperature_c"] = id(bmp_temperature).state;
+            }
+
+            if (id(cloud_has_scd4x) && !isnan(id(cloud_scd4x_humidity))) {
+              root["humidity_pct"] = id(cloud_scd4x_humidity);
+            }
+
+            if (id(cloud_has_scd4x) && !isnan(id(cloud_scd4x_co2))) {
+              root["co2_ppm"] = (int) roundf(id(cloud_scd4x_co2));
+            }
+
+            if (id(illuminance).has_state() && !isnan(id(illuminance).state)) {
+              root["lux"] = id(illuminance).state;
+            }
+
+            if (id(bmp_pressure).has_state() && !isnan(id(bmp_pressure).state)) {
+              root["pressure_hpa"] = id(bmp_pressure).state;
+            }
+
+            if (id(cloud_has_presence)) {
+              root["occupancy"] = id(cloud_occupancy);
+            }
+
+            if (id(cloud_has_zone_occupancy)) {
+              root["zone1_occupancy"] = id(cloud_zone1_occupancy);
+              root["zone2_occupancy"] = id(cloud_zone2_occupancy);
+              root["zone3_occupancy"] = id(cloud_zone3_occupancy);
+              root["zone4_occupancy"] = id(cloud_zone4_occupancy);
+            }
+
+            if (id(cloud_has_zone_counts)) {
+              if (id(cloud_zone1_target_count) >= 0) root["zone1_target_count"] = id(cloud_zone1_target_count);
+              if (id(cloud_zone2_target_count) >= 0) root["zone2_target_count"] = id(cloud_zone2_target_count);
+              if (id(cloud_zone3_target_count) >= 0) root["zone3_target_count"] = id(cloud_zone3_target_count);
+              if (id(cloud_zone4_target_count) >= 0) root["zone4_target_count"] = id(cloud_zone4_target_count);
+            }
+
+            if (id(cpu_temperature).has_state() && !isnan(id(cpu_temperature).state)) {
+              root["cpu_temperature_c"] = id(cpu_temperature).state;
+            }
+
+            root["firmware_version"] = "${project_version}";
+            root["hardware_version"] = "${ceilsense_hardware_version}";
+          on_response:
+            then:
+              - lambda: |-
+                  if (response->status_code == 200) {
+                    id(cloud_last_sync_success) = true;
+                    id(cloud_sync_failures) = 0;
+
+                    if (id(cloud_first_sync_timestamp) == 0) {
+                      auto now = id(homeassistant_time).now().is_valid()
+                        ? id(homeassistant_time).now().timestamp
+                        : id(sntp_time).now().timestamp;
+                      id(cloud_first_sync_timestamp) = now;
+                    }
+                  } else if (response->status_code == 401) {
+                    id(cloud_is_registered) = false;
+                    id(cloud_device_token) = "";
+                    id(cloud_sync_failures)++;
+                  } else if (response->status_code == 429) {
+                    id(cloud_sync_failures) += 5;
+                  } else {
+                    id(cloud_sync_failures)++;
+                  }
+          on_error:
+            then:
+              - lambda: |-
+                  id(cloud_last_sync_success) = false;
+                  id(cloud_sync_failures)++;
+
+  - id: cloud_reset
+    mode: single
+    then:
+      - lambda: |-
+          id(cloud_device_id) = "";
+          id(cloud_device_token) = "";
+          id(cloud_is_registered) = false;
+          id(cloud_last_sync_success) = false;
+          id(cloud_sync_failures) = 0;
+          id(cloud_first_sync_timestamp) = 0;
+      - delay: 5s
+      - script.execute: cloud_register
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+  - platform: sntp
+    id: sntp_time
+    timezone: "Europe/Amsterdam"
+    servers:
+      - "pool.ntp.org"
+      - "time.google.com"
+
+esphome:
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 10s
+        - if:
+            condition:
+              lambda: "return !id(cloud_is_registered);"
+            then:
+              - script.execute: cloud_register
+
+interval:
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            lambda: "return !id(cloud_is_registered) && !id(cloud_is_registering);"
+          then:
+            - script.execute: cloud_register
+
+  - interval: ${cloud_sync_interval}
+    then:
+      - script.execute: cloud_send_batch

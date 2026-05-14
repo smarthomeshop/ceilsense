@@ -1,13 +1,13 @@
 substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
-  ceilsense_hardware_version: "v1-basic-wifi-ld2412"
+  ceilsense_hardware_version: "v1-basic-eth-ld2412"
   wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-ld2412-manifest.json"
   eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2412-manifest.json"
   wifi_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-ld2412-cloud-manifest.json"
   eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2412-cloud-manifest.json"
-  default_network: "WiFi (local)"
-  cloud_enabled: "false"
+  default_network: "Ethernet + SmartHomeShop App (cloud)"
+  cloud_enabled: "true"
 
 esphome:
   name: ${device_name}
@@ -15,9 +15,11 @@ esphome:
 
 packages:
   base: !include base.yaml
-  net: !include wifi.yaml
+  net: !include eth.yaml
+  cloud: !include packages/cloud_core.yaml
+  cloud_presence: !include packages/cloud_ld2412.yaml
   ld2412: !include packages/ld2412.yaml
 
 dashboard_import:
-  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml@main
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-eth-ld2412-cloud.yaml@main
   import_full_config: false

@@ -8,6 +8,19 @@ ethernet:
   interrupt_pin: GPIO39
   reset_pin: GPIO40
 
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      name: Ethernet IP Address
+      id: wifi_ip
+      entity_category: diagnostic
+      disabled_by_default: true
+    mac_address:
+      name: Ethernet MAC
+      id: wifi_mac
+      entity_category: diagnostic
+      disabled_by_default: true
+
 esphome:
   on_boot:
     - priority: 600

@@ -54,13 +54,6 @@ esphome:
                     switch.is_on: ble_disable_after_boot
                   then:
                     - ble.disable:
-              - if:
-                  condition:
-                    lambda: 'return !id(onboarding_sent);'
-                  then:
-                    - http_request.get:
-                        url: "https://smarthomeshop.io/finish-onboarding/ceilsense"
-                    - lambda: 'id(onboarding_sent) = true;'
     # Fase 2: LD2412 detectie
     - priority: 580
       then:
@@ -203,8 +196,10 @@ captive_portal:
 
 esp32_improv:
   authorizer: none
+  next_url: "https://app.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
 
 improv_serial:
+  next_url: "https://app.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
 
 # HTTP client for onboarding and Update entity
 http_request:

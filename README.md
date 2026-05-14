@@ -2,13 +2,13 @@
 
 ![CeilSense](images/promo1.jpg)
 
-CeilSense is a ceiling-mounted ESPHome sensor for Home Assistant that combines presence detection, air-quality monitoring, and ambient sensing in one device. It is designed for fully local operation and supports both WiFi and Ethernet firmware variants.
+CeilSense is a ceiling-mounted ESPHome sensor for Home Assistant that combines presence detection, air-quality monitoring, and ambient sensing in one device. It supports WiFi and Ethernet firmware variants, with fully local operation by default and optional SmartHomeShop App cloud variants.
 
 Product page: https://ceilsense.nl/en
 
 ## How It Works
 
-CeilSense combines a radar presence sensor with environmental sensors in a ceiling-mounted device. Depending on the selected firmware variant, it connects over WiFi or Ethernet and sends its data directly to Home Assistant through ESPHome.
+CeilSense combines a radar presence sensor with environmental sensors in a ceiling-mounted device. Depending on the selected firmware variant, it connects over WiFi or Ethernet and can run either fully local through ESPHome or with SmartHomeShop App cloud sync.
 
 ## Key Features
 
@@ -16,9 +16,10 @@ CeilSense combines a radar presence sensor with environmental sensors in a ceili
 - CO2, temperature, and humidity monitoring
 - Illuminance and pressure sensing
 - WiFi and Ethernet variants, including PoE-capable hardware
+- Local and SmartHomeShop App cloud firmware variants
 - Captive portal and Improv provisioning on WiFi builds
 - Fully local operation with OTA updates through published manifests
-- Manual switching between WiFi and Ethernet firmware families
+- Manual switching between WiFi local, Ethernet local, WiFi cloud, and Ethernet cloud within the same firmware family
 
 ## Hardware Versions
 
@@ -29,22 +30,16 @@ CeilSense combines a radar presence sensor with environmental sensors in a ceili
 
 ## Variants
 
-We publish customer-facing variants for Basic and Complete hardware, with WiFi or Ethernet networking and optional LD2412 or LD2450 radar support.
+We publish customer-facing variants for Basic and Complete hardware, with WiFi or Ethernet networking, optional LD2412 or LD2450 radar support, and matching SmartHomeShop App cloud variants for each family.
 
 | Hardware | Variant | Description |
 |----------|---------|-------------|
-| V1 Basic (ESP32-S3) | WiFi | WiFi build without external radar package |
-| V1 Basic (ESP32-S3) | WiFi + LD2412 | WiFi build with LD2412 presence radar |
-| V1 Basic (ESP32-S3) | WiFi + LD2450 | WiFi build with LD2450 multi-target radar |
-| V1 Basic (ESP32-S3) | Ethernet | Ethernet build without external radar package |
-| V1 Basic (ESP32-S3) | Ethernet + LD2412 | Ethernet build with LD2412 presence radar |
-| V1 Basic (ESP32-S3) | Ethernet + LD2450 | Ethernet build with LD2450 multi-target radar |
-| V1 Complete (ESP32-S3) | WiFi | WiFi build with SCD4x CO2 support |
-| V1 Complete (ESP32-S3) | WiFi + LD2412 | WiFi build with SCD4x and LD2412 presence radar |
-| V1 Complete (ESP32-S3) | WiFi + LD2450 | WiFi build with SCD4x and LD2450 multi-target radar |
-| V1 Complete (ESP32-S3) | Ethernet | Ethernet build with SCD4x CO2 support |
-| V1 Complete (ESP32-S3) | Ethernet + LD2412 | Ethernet build with SCD4x and LD2412 presence radar |
-| V1 Complete (ESP32-S3) | Ethernet + LD2450 | Ethernet build with SCD4x and LD2450 multi-target radar |
+| V1 Basic (ESP32-S3) | WiFi / Ethernet / WiFi Cloud / Ethernet Cloud | Build without external radar package |
+| V1 Basic (ESP32-S3) | WiFi + LD2412 / Ethernet + LD2412 / WiFi + LD2412 Cloud / Ethernet + LD2412 Cloud | Build with LD2412 presence radar |
+| V1 Basic (ESP32-S3) | WiFi + LD2450 / Ethernet + LD2450 / WiFi + LD2450 Cloud / Ethernet + LD2450 Cloud | Build with LD2450 multi-target radar |
+| V1 Complete (ESP32-S3) | WiFi / Ethernet / WiFi Cloud / Ethernet Cloud | Build with SCD4x CO2 support |
+| V1 Complete (ESP32-S3) | WiFi + LD2412 / Ethernet + LD2412 / WiFi + LD2412 Cloud / Ethernet + LD2412 Cloud | Build with SCD4x and LD2412 presence radar |
+| V1 Complete (ESP32-S3) | WiFi + LD2450 / Ethernet + LD2450 / WiFi + LD2450 Cloud / Ethernet + LD2450 Cloud | Build with SCD4x and LD2450 multi-target radar |
 
 ## Getting Started
 
@@ -52,7 +47,7 @@ We publish customer-facing variants for Basic and Complete hardware, with WiFi o
 2. Flash the desired firmware with ESP Web Tools or ESPHome CLI.
 3. Use Improv or captive portal for WiFi onboarding where applicable.
 4. Ethernet builds connect automatically and wait for API access.
-5. To switch later, change `Firmware Type` in Home Assistant and run the firmware update entity.
+5. To switch later, change `Firmware Variant` in Home Assistant and run the firmware update entity.
 
 Quick start guide: https://smarthomeshop.io/quick-start-ceilsense
 
@@ -84,17 +79,29 @@ ceilsense/
 Pre-built firmware manifests are published on the `gh-pages` branch.
 
 - Basic WiFi: `ceilsense-basic-wifi-manifest.json`
+- Basic WiFi Cloud: `ceilsense-basic-wifi-cloud-manifest.json`
 - Basic Ethernet: `ceilsense-basic-eth-manifest.json`
+- Basic Ethernet Cloud: `ceilsense-basic-eth-cloud-manifest.json`
 - Basic WiFi LD2412: `ceilsense-basic-wifi-ld2412-manifest.json`
+- Basic WiFi LD2412 Cloud: `ceilsense-basic-wifi-ld2412-cloud-manifest.json`
 - Basic Ethernet LD2412: `ceilsense-basic-eth-ld2412-manifest.json`
+- Basic Ethernet LD2412 Cloud: `ceilsense-basic-eth-ld2412-cloud-manifest.json`
 - Basic WiFi LD2450: `ceilsense-basic-wifi-ld2450-manifest.json`
+- Basic WiFi LD2450 Cloud: `ceilsense-basic-wifi-ld2450-cloud-manifest.json`
 - Basic Ethernet LD2450: `ceilsense-basic-eth-ld2450-manifest.json`
+- Basic Ethernet LD2450 Cloud: `ceilsense-basic-eth-ld2450-cloud-manifest.json`
 - Complete WiFi: `ceilsense-complete-wifi-manifest.json`
+- Complete WiFi Cloud: `ceilsense-complete-wifi-cloud-manifest.json`
 - Complete Ethernet: `ceilsense-complete-eth-manifest.json`
+- Complete Ethernet Cloud: `ceilsense-complete-eth-cloud-manifest.json`
 - Complete WiFi LD2412: `ceilsense-complete-wifi-ld2412-manifest.json`
+- Complete WiFi LD2412 Cloud: `ceilsense-complete-wifi-ld2412-cloud-manifest.json`
 - Complete Ethernet LD2412: `ceilsense-complete-eth-ld2412-manifest.json`
+- Complete Ethernet LD2412 Cloud: `ceilsense-complete-eth-ld2412-cloud-manifest.json`
 - Complete WiFi LD2450: `ceilsense-complete-wifi-ld2450-manifest.json`
+- Complete WiFi LD2450 Cloud: `ceilsense-complete-wifi-ld2450-cloud-manifest.json`
 - Complete Ethernet LD2450: `ceilsense-complete-eth-ld2450-manifest.json`
+- Complete Ethernet LD2450 Cloud: `ceilsense-complete-eth-ld2450-cloud-manifest.json`
 
 ## Contributing
 

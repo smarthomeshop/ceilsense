@@ -13,7 +13,10 @@ substitutions:
   # Default manifests (overridden by variants)
   wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-manifest.json"
   eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-manifest.json"
-  default_network: "WiFi"
+  wifi_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-wifi-cloud-manifest.json"
+  eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-cloud-manifest.json"
+  default_network: "WiFi (local)"
+  cloud_enabled: "false"
   i2c_frequency: "400kHz"
 
 esphome:
@@ -236,9 +239,11 @@ web_server:
 # Update entity placeholder (point to your manifest later via substitutions)
 http_request:
   useragent: ceilsense-esphome
+  verify_ssl: false
+  timeout: 10s
 update:
   - platform: http_request
-    name: CeilSense Firmware
+    name: "${friendly_name} Firmware"
     id: firmware_update
     source: ${wifi_update_manifest_url}
 
@@ -247,16 +252,19 @@ script:
     then:
       - lambda: |-
           std::string option = id(firmware_selector).current_option();
-          if (option == "Ethernet") {
-            ESP_LOGI("main", "OTA updates set to use Ethernet firmware");
+          if (option == "Ethernet (local)" || option == "Ethernet") {
+            ESP_LOGI("main", "OTA updates set to use Ethernet (local) firmware");
             id(firmware_update).set_source_url("${eth_update_manifest_url}");
+          } else if (option == "WiFi + SmartHomeShop App (cloud)" || option == "WiFi Cloud") {
+            ESP_LOGI("main", "OTA updates set to use WiFi + SmartHomeShop App (cloud) firmware");
+            id(firmware_update).set_source_url("${wifi_cloud_update_manifest_url}");
+          } else if (option == "Ethernet + SmartHomeShop App (cloud)" || option == "Ethernet Cloud") {
+            ESP_LOGI("main", "OTA updates set to use Ethernet + SmartHomeShop App (cloud) firmware");
+            id(firmware_update).set_source_url("${eth_cloud_update_manifest_url}");
           } else {
-            ESP_LOGI("main", "OTA updates set to use WiFi firmware");
+            ESP_LOGI("main", "OTA updates set to use WiFi (local) firmware");
             id(firmware_update).set_source_url("${wifi_update_manifest_url}");
           }
-  - id: play_stream
-    then:
-      - delay: 10ms
 
 # I2C + sensors
 i2c:
@@ -326,18 +334,20 @@ button:
             id: firmware_update
             force_update: true
 
-# Firmware type selector (WiFi / Ethernet)
+# Firmware variant selector
 select:
   - platform: template
     id: firmware_selector
-    name: Firmware Type
-    icon: "mdi:test-tube"
+    name: "${friendly_name} Firmware Variant"
+    icon: "mdi:network"
     entity_category: config
     optimistic: true
     restore_value: true
     options:
-      - "WiFi"
-      - "Ethernet"
+      - "WiFi (local)"
+      - "Ethernet (local)"
+      - "WiFi + SmartHomeShop App (cloud)"
+      - "Ethernet + SmartHomeShop App (cloud)"
     initial_option: ${default_network}
     on_value:
       then:
@@ -368,3 +378,8 @@ text_sensor:
     update_interval: 5h
     lambda: |-
       return {"${ceilsense_hardware_version}"};
+
+# Script placeholder
+  - id: play_stream
+    then:
+      - delay: 10ms

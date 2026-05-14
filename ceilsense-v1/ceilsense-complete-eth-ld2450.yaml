@@ -5,7 +5,10 @@ substitutions:
   ceilsense_hardware_version: "v1-complete-eth-ld2450"
   wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2450-manifest.json"
   eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-ld2450-manifest.json"
-  default_network: "Ethernet"
+  wifi_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-ld2450-cloud-manifest.json"
+  eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-ld2450-cloud-manifest.json"
+  default_network: "Ethernet (local)"
+  cloud_enabled: "false"
 
 esphome:
   name: ${device_name}

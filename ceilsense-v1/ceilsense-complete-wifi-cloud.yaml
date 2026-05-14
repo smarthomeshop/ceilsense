@@ -1,14 +1,13 @@
-# Complete Ethernet (SCD4x required, LD2412 optional)
 substitutions:
   device_name: ceilsense
   friendly_name: "CeilSense"
-  ceilsense_hardware_version: "v1-complete-eth"
+  ceilsense_hardware_version: "v1-complete-wifi"
   wifi_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-manifest.json"
   eth_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-manifest.json"
   wifi_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-wifi-cloud-manifest.json"
   eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-complete-eth-cloud-manifest.json"
-  default_network: "Ethernet (local)"
-  cloud_enabled: "false"
+  default_network: "WiFi + SmartHomeShop App (cloud)"
+  cloud_enabled: "true"
 
 esphome:
   name: ${device_name}
@@ -16,9 +15,11 @@ esphome:
 
 packages:
   base: !include base.yaml
-  net: !include eth.yaml
+  net: !include wifi.yaml
+  cloud: !include packages/cloud_core.yaml
+  cloud_air: !include packages/cloud_scd4x.yaml
   scd4x: !include packages/scd4x.yaml
 
 dashboard_import:
-  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-eth.yaml@main
+  package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-wifi-cloud.yaml@main
   import_full_config: false
