@@ -167,6 +167,15 @@ script:
     then:
       - if:
           condition:
+            not:
+              wifi.connected:
+          then:
+            - logger.log:
+                level: DEBUG
+                format: "Skipping cloud registration because WiFi is not connected"
+            - script.stop: cloud_register
+      - if:
+          condition:
             lambda: "return id(cloud_is_registering);"
           then:
             - logger.log:
@@ -239,6 +248,12 @@ script:
   - id: cloud_send_batch
     mode: single
     then:
+      - if:
+          condition:
+            not:
+              wifi.connected:
+          then:
+            - script.stop: cloud_send_batch
       - if:
           condition:
             lambda: "return !id(cloud_is_registered);"
@@ -380,23 +395,14 @@ time:
       - "pool.ntp.org"
       - "time.google.com"
 
-esphome:
-  on_boot:
-    - priority: -100
-      then:
-        - delay: 10s
-        - if:
-            condition:
-              lambda: "return !id(cloud_is_registered);"
-            then:
-              - script.execute: cloud_register
-
 interval:
   - interval: 30s
     then:
       - if:
           condition:
-            lambda: "return !id(cloud_is_registered) && !id(cloud_is_registering);"
+            and:
+              - wifi.connected:
+              - lambda: "return !id(cloud_is_registered) && !id(cloud_is_registering);"
           then:
             - script.execute: cloud_register
 

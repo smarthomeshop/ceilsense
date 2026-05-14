@@ -28,11 +28,6 @@ esphome:
     version: ${project_version}
   build_path: build/${build_variant}
   on_boot:
-    - priority: 610
-      then:
-        - script.execute: sync_selected_firmware_source
-        - update.check:
-            id: firmware_update
     - priority: 540
       then:
         # Fase 4: BH1750 lux
@@ -265,6 +260,9 @@ script:
             ESP_LOGI("main", "OTA updates set to use WiFi (local) firmware");
             id(firmware_update).set_source_url("${wifi_update_manifest_url}");
           }
+  - id: play_stream
+    then:
+      - delay: 10ms
 
 # I2C + sensors
 i2c:
@@ -379,7 +377,3 @@ text_sensor:
     lambda: |-
       return {"${ceilsense_hardware_version}"};
 
-# Script placeholder
-  - id: play_stream
-    then:
-      - delay: 10ms
