@@ -12,15 +12,27 @@ Any manual changes will be overwritten on the next publish.
 ## Layout
 - `ceilsense-basic-wifi/`
 - `ceilsense-basic-wifi-ld2412/`
+- `ceilsense-basic-wifi-cloud/`
+- `ceilsense-basic-wifi-ld2412-cloud/`
 - `ceilsense-basic-wifi-ld2412-single/`
 - `ceilsense-basic-eth/`
 - `ceilsense-basic-eth-ld2412/`
+- `ceilsense-basic-eth-cloud/`
+- `ceilsense-basic-eth-ld2412-cloud/`
 - `ceilsense-complete-wifi/`
 - `ceilsense-complete-wifi-ld2412/`
+- `ceilsense-complete-wifi-cloud/`
+- `ceilsense-complete-wifi-ld2412-cloud/`
 - `ceilsense-complete-eth/`
 - `ceilsense-complete-eth-ld2412/`
+- `ceilsense-complete-eth-cloud/`
+- `ceilsense-complete-eth-ld2412-cloud/`
 - `ceilsense-basic-wifi-ld2450/`
 - `ceilsense-basic-eth-ld2450/`
+- `ceilsense-basic-wifi-ld2450-cloud/`
+- `ceilsense-basic-eth-ld2450-cloud/`
 - `ceilsense-complete-wifi-ld2450/`
 - `ceilsense-complete-eth-ld2450/`
+- `ceilsense-complete-wifi-ld2450-cloud/`
+- `ceilsense-complete-eth-ld2450-cloud/`
 - `*-manifest.json` aggregate manifests for OTA and ESP Web Tools
