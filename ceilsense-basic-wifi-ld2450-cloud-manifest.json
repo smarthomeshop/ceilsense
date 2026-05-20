@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-basic-wifi-ld2450-cloud/ceilsense-esp32s3.ota.bin",
-        "md5": "85a72ae31717f8f5e37190cd3146072f"
+        "md5": "503df19a46adebf7ad563a04ae904401"
       },
       "parts": [
         {
