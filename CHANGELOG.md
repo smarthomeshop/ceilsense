@@ -6,6 +6,9 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Added the branded SmartHomeShop setup portal to all CeilSense WiFi firmware variants: connecting to the fallback hotspot now opens a SmartHomeShop setup page to pick your WiFi network, choose the firmware variant and see next steps for Home Assistant or SmartHomeShop Cloud.
+- The setup portal can also switch a CeilSense to the Ethernet firmware: pick Ethernet during setup and the device installs the matching Ethernet variant over WiFi in the background (about two minutes), after which you plug in the network cable. The radar configuration (LD2412 or LD2450) is preserved automatically.
+
 - Delayed cloud registration until WiFi is connected and stopped automatic OTA manifest checks during boot, reducing startup watchdog resets and early network errors on cloud firmware.
 - Fixed a build failure with ESPHome 2026.4.0 where `play_stream` was incorrectly nested under `text_sensor`, causing validation errors on devices using the LD2450 variant.
 - Added SmartHomeShop App cloud firmware variants for CeilSense WiFi and Ethernet builds, including LD2412, LD2450, and Complete SCD4x families.

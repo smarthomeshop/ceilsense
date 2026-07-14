@@ -8,6 +8,20 @@ substitutions:
   eth_cloud_update_manifest_url: "https://smarthomeshop.github.io/ceilsense/ceilsense-basic-eth-ld2412-cloud-manifest.json"
   default_network: "WiFi + SmartHomeShop App (cloud)"
   cloud_enabled: "true"
+  # SmartHomeShop setup portal
+  setup_product_name: "CeilSense"
+  setup_product_variant: "V1 Basic WiFi LD2412 Cloud"
+  setup_support_cloud: "true"
+  setup_support_home_assistant: "true"
+  setup_support_mqtt: "false"
+  setup_support_homey: "false"
+  setup_support_ethernet: "true"
+  setup_support_firmware_selector: "true"
+  setup_default_cloud_enabled: "true"
+  setup_default_home_assistant_enabled: "true"
+  setup_default_mqtt_enabled: "false"
+  setup_firmware_options: "WiFi (local)|Ethernet (local)|WiFi + SmartHomeShop App (cloud)|Ethernet + SmartHomeShop App (cloud)"
+  setup_default_firmware_option: ${default_network}
 
 esphome:
   name: ${device_name}
@@ -19,6 +33,8 @@ packages:
   cloud: !include packages/cloud_core.yaml
   cloud_presence: !include packages/cloud_ld2412.yaml
   ld2412: !include packages/ld2412.yaml
+  setup_portal: github://smarthomeshop/setup-portal/packages/setup-portal.yaml@main
+  setup_portal_bridge: github://smarthomeshop/setup-portal/packages/firmware-selector-bridge.yaml@main
 
 dashboard_import:
   package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-basic-wifi-ld2412-cloud.yaml@main

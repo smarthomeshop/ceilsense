@@ -3,6 +3,7 @@ substitutions:
   cloud_api_url: "https://api.smarthomeshop.io"
   cloud_api_version: "v1"
   cloud_sync_interval: "60s"
+  cloud_presence_sync_interval: "10s"
 
 globals:
   - id: cloud_device_token
@@ -33,6 +34,10 @@ globals:
     type: uint32_t
     restore_value: true
     initial_value: "0"
+  - id: cloud_last_presence_signature
+    type: int
+    restore_value: false
+    initial_value: "-1"
   - id: cloud_has_scd4x
     type: bool
     restore_value: false
@@ -168,11 +173,11 @@ script:
       - if:
           condition:
             not:
-              wifi.connected:
+              lambda: "return network::is_connected();"
           then:
             - logger.log:
                 level: DEBUG
-                format: "Skipping cloud registration because WiFi is not connected"
+                format: "Skipping cloud registration because the network is not connected"
             - script.stop: cloud_register
       - if:
           condition:
@@ -251,7 +256,7 @@ script:
       - if:
           condition:
             not:
-              wifi.connected:
+              lambda: "return network::is_connected();"
           then:
             - script.stop: cloud_send_batch
       - if:
@@ -382,8 +387,45 @@ script:
           id(cloud_last_sync_success) = false;
           id(cloud_sync_failures) = 0;
           id(cloud_first_sync_timestamp) = 0;
+          id(cloud_last_presence_signature) = -1;
       - delay: 5s
       - script.execute: cloud_register
+
+  - id: cloud_send_presence_if_changed
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: "return !id(cloud_has_presence) && !id(cloud_has_zone_occupancy) && !id(cloud_has_zone_counts);"
+          then:
+            - script.stop: cloud_send_presence_if_changed
+      - if:
+          condition:
+            lambda: |-
+              int signature = id(cloud_occupancy) ? 1 : 0;
+              signature = signature * 31 + (id(cloud_zone1_occupancy) ? 1 : 0);
+              signature = signature * 31 + (id(cloud_zone2_occupancy) ? 1 : 0);
+              signature = signature * 31 + (id(cloud_zone3_occupancy) ? 1 : 0);
+              signature = signature * 31 + (id(cloud_zone4_occupancy) ? 1 : 0);
+              signature = signature * 31 + id(cloud_zone1_target_count);
+              signature = signature * 31 + id(cloud_zone2_target_count);
+              signature = signature * 31 + id(cloud_zone3_target_count);
+              signature = signature * 31 + id(cloud_zone4_target_count);
+              return signature == id(cloud_last_presence_signature);
+          then:
+            - script.stop: cloud_send_presence_if_changed
+      - lambda: |-
+          int signature = id(cloud_occupancy) ? 1 : 0;
+          signature = signature * 31 + (id(cloud_zone1_occupancy) ? 1 : 0);
+          signature = signature * 31 + (id(cloud_zone2_occupancy) ? 1 : 0);
+          signature = signature * 31 + (id(cloud_zone3_occupancy) ? 1 : 0);
+          signature = signature * 31 + (id(cloud_zone4_occupancy) ? 1 : 0);
+          signature = signature * 31 + id(cloud_zone1_target_count);
+          signature = signature * 31 + id(cloud_zone2_target_count);
+          signature = signature * 31 + id(cloud_zone3_target_count);
+          signature = signature * 31 + id(cloud_zone4_target_count);
+          id(cloud_last_presence_signature) = signature;
+      - script.execute: cloud_send_batch
 
 time:
   - platform: homeassistant
@@ -396,12 +438,16 @@ time:
       - "time.google.com"
 
 interval:
+  - interval: ${cloud_presence_sync_interval}
+    then:
+      - script.execute: cloud_send_presence_if_changed
+
   - interval: 30s
     then:
       - if:
           condition:
             and:
-              - wifi.connected:
+              - lambda: "return network::is_connected();"
               - lambda: "return !id(cloud_is_registered) && !id(cloud_is_registering);"
           then:
             - script.execute: cloud_register

@@ -174,10 +174,10 @@ captive_portal:
 
 esp32_improv:
   authorizer: none
-  next_url: "https://app.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
+  next_url: "https://api.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
 
 improv_serial:
-  next_url: "https://app.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
+  next_url: "https://api.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
 
 # HTTP client for onboarding and Update entity
 http_request:
