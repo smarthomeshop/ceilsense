@@ -6,6 +6,8 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Fixed cloud firmware restarting every 15 minutes when Home Assistant is not connected: the no-client reboot of the native API is now disabled on cloud firmware, so cloud-only setups run uninterrupted.
+
 - Added the branded SmartHomeShop setup portal to all CeilSense WiFi firmware variants: connecting to the fallback hotspot now opens a SmartHomeShop setup page to pick your WiFi network, choose the firmware variant and see next steps for Home Assistant or SmartHomeShop Cloud.
 - The setup portal can also switch a CeilSense to the Ethernet firmware: pick Ethernet during setup and the device installs the matching Ethernet variant over WiFi in the background (about two minutes), after which you plug in the network cable. The radar configuration (LD2412 or LD2450) is preserved automatically.
 
