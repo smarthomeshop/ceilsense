@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Basic WiFi",
-  "version": "1.30",
+  "version": "1.31",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-basic-wifi/ceilsense-esp32s3.ota.bin",
-        "md5": "2e769c629fbd9938c816596b048d4e80"
+        "md5": "5dddd248714cb541a1433b9cfeb82826"
       },
       "parts": [
         {

@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Complete Ethernet",
-  "version": "1.30",
+  "version": "1.31",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-complete-eth/ceilsense-esp32s3.ota.bin",
-        "md5": "d99c79f66e818bf790cd01e2e6f0eb41"
+        "md5": "1c3cb54c325673fddc2583cf49aaa4ce"
       },
       "parts": [
         {
