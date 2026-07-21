@@ -264,6 +264,20 @@ script:
   - id: play_stream
     then:
       - delay: 10ms
+  - id: check_firmware_update_when_online
+    mode: restart
+    then:
+      - wait_until:
+          condition:
+            lambda: return network::is_connected();
+          timeout: 30s
+      - if:
+          condition:
+            lambda: return network::is_connected();
+          then:
+            - delay: 2s
+            - update.check:
+                id: firmware_update
 
 # I2C + sensors
 i2c:
@@ -351,8 +365,7 @@ select:
     on_value:
       then:
         - script.execute: sync_selected_firmware_source
-        - update.check:
-            id: firmware_update
+        - script.execute: check_firmware_update_when_online
 
 # Text sensors
 text_sensor:
@@ -377,4 +390,3 @@ text_sensor:
     update_interval: 5h
     lambda: |-
       return {"${ceilsense_hardware_version}"};
-
