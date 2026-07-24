@@ -6,6 +6,8 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Added cloud-controlled CeilSense LED settings for motion light, night light and CO2 warnings. Cloud firmware now applies versioned device configuration, reports whether it was accepted and uses moving-target detection for the motion light while still presence can activate the night light.
+
 - Fixed cloud firmware restarting every 15 minutes when Home Assistant is not connected: the no-client reboot of the native API is now disabled on cloud firmware, so cloud-only setups run uninterrupted.
 
 - Added the branded SmartHomeShop setup portal to all CeilSense WiFi firmware variants: connecting to the fallback hotspot now opens a SmartHomeShop setup page to pick your WiFi network, choose the firmware variant and see next steps for Home Assistant or SmartHomeShop Cloud.

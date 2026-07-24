@@ -98,6 +98,8 @@ esphome:
               - light.turn_off:
                   id: status_led
                   transition_length: 300ms
+        - lambda: |-
+            id(startup_complete) = true;
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -127,6 +129,10 @@ globals:
     restore_value: no
     initial_value: '0'
   - id: startup_failed
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: startup_complete
     type: bool
     restore_value: no
     initial_value: "false"

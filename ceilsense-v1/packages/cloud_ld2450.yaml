@@ -4,6 +4,8 @@ interval:
       - lambda: |-
           id(cloud_has_presence) = true;
           id(cloud_occupancy) = id(presence).state;
+          id(cloud_moving_target) = id(moving_target).state;
+          id(cloud_still_target) = id(still_target).state;
           id(cloud_has_zone_occupancy) = true;
           id(cloud_has_zone_counts) = true;
 

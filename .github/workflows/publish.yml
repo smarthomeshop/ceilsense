@@ -212,6 +212,62 @@ jobs:
           sed -i "s/^\s*project_main_version: \".*\"/  project_main_version: \"${{ steps.versions.outputs.v1_version }}\"/" ceilsense-v1/base.yaml
           sed -i "s/^\s*project_version: \".*\"/  project_version: \"${{ steps.versions.outputs.v1_version }}\"/" ceilsense-v1/base.yaml
 
+          finalize_changelog() {
+            local unreleased_notes
+            local release_blocks
+            local release_date
+
+            unreleased_notes=$(mktemp)
+            release_blocks=$(mktemp)
+            release_date=$(TZ=Europe/Amsterdam date +%Y-%m-%d)
+
+            awk '
+              $0 == "## [Unreleased]" { found=1; next }
+              found && /^## \[/ { exit }
+              found { print }
+            ' CHANGELOG.md \
+              | sed '/^- Add customer-facing firmware notes here before merging a PR\.$/d' \
+              | sed '/^- Add customer-facing changes here before the next release is published\.$/d' \
+              > "$unreleased_notes"
+
+            if ! grep -q '[^[:space:]]' "$unreleased_notes"; then
+              echo "No unreleased changelog notes to finalize"
+              rm -f "$unreleased_notes" "$release_blocks"
+              return
+            fi
+
+            {
+              printf '## [CeilSense V1 %s] - %s\n\n' "${{ steps.versions.outputs.v1_version }}" "$release_date"
+              cat "$unreleased_notes"
+              printf '\n'
+            } > "$release_blocks"
+
+            awk -v blocks_file="$release_blocks" '
+              BEGIN { in_unreleased=0 }
+              $0 == "## [Unreleased]" {
+                print
+                print ""
+                print "- Add customer-facing firmware notes here before merging a PR."
+                print ""
+                while ((getline line < blocks_file) > 0) print line
+                in_unreleased=1
+                next
+              }
+              in_unreleased && /^## \[/ {
+                in_unreleased=0
+                print
+                next
+              }
+              in_unreleased { next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+
+            mv CHANGELOG.md.tmp CHANGELOG.md
+            rm -f "$unreleased_notes" "$release_blocks"
+          }
+
+          finalize_changelog
+
           if git diff --quiet; then
             echo "No version changes to commit"
             exit 0
@@ -219,7 +275,7 @@ jobs:
 
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ceilsense-v1/base.yaml
+          git add CHANGELOG.md ceilsense-v1/base.yaml
           git commit -m "chore: update CeilSense V1 version to ${{ steps.versions.outputs.v1_version }} [skip ci]" || exit 0
           git push || echo "Nothing to push"
 
@@ -939,6 +995,9 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Create release for changed hardware version
         shell: bash
@@ -956,10 +1015,21 @@ jobs:
             fi
 
             awk -v heading="$heading" '
-              $0 == heading { found=1; next }
+              index($0, heading) == 1 { found=1; next }
               found && /^## \[/ { exit }
               found { print }
             ' CHANGELOG.md > release-notes.txt
+
+            sed -i '/^- Add customer-facing firmware notes here before merging a PR\.$/d' release-notes.txt
+            sed -i '/^- Add customer-facing changes here before the next release is published\.$/d' release-notes.txt
+
+            if ! grep -q '[^[:space:]]' release-notes.txt; then
+              awk '
+                $0 == "## [Unreleased]" { found=1; next }
+                found && /^## \[/ { exit }
+                found { print }
+              ' CHANGELOG.md > release-notes.txt
+            fi
 
             if [[ ! -s release-notes.txt ]]; then
               printf '%s\n\n%s\n' \
