@@ -18,6 +18,7 @@ packages:
   base: !include base.yaml
   net: !include eth.yaml
   scd4x: !include packages/scd4x.yaml
+  led_local: !include packages/led_local_co2.yaml
 
 dashboard_import:
   package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-eth.yaml@main

@@ -164,6 +164,10 @@ esphome:
               - light.turn_off:
                   id: status_led
                   transition_length: 300ms
+        - lambda: 'id(startup_complete) = true;'
+
+packages:
+  led_local: !include packages/led_local_co2_presence.yaml
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -216,6 +220,10 @@ web_server:
 
 # Globals
 globals:
+  - id: startup_complete
+    type: bool
+    restore_value: no
+    initial_value: "false"
   - id: startup_phase
     type: int
     restore_value: no

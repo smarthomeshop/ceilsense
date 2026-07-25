@@ -19,6 +19,7 @@ packages:
   net: !include eth.yaml
   ld2412: !include packages/ld2412.yaml
   scd4x: !include packages/scd4x.yaml
+  led_local: !include packages/led_local_co2_presence.yaml
 
 dashboard_import:
   package_import_url: github://smarthomeshop/ceilsense/ceilsense-v1/ceilsense-complete-eth-ld2412.yaml@main

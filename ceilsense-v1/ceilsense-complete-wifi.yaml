@@ -32,6 +32,7 @@ packages:
   base: !include base.yaml
   net: !include wifi.yaml
   scd4x: !include packages/scd4x.yaml
+  led_local: !include packages/led_local_co2.yaml
   setup_portal: github://smarthomeshop/setup-portal/packages/setup-portal.yaml@main
   setup_portal_bridge: github://smarthomeshop/setup-portal/packages/firmware-selector-bridge.yaml@main
 

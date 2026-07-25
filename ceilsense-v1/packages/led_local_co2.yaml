@@ -1,0 +1,153 @@
+# Local LED control for non-cloud Complete variants with an SCD4x.
+
+globals:
+  - id: local_led_runtime_state
+    type: int
+    restore_value: no
+    initial_value: "-1"
+  - id: local_co2_alert_phase
+    type: int
+    restore_value: no
+    initial_value: "0"
+  - id: local_co2_alert_color
+    type: int
+    restore_value: no
+    initial_value: "0"
+  - id: local_co2_alert_until
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  - id: local_co2_alert_active
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+switch:
+  - platform: template
+    id: local_led_enabled
+    name: "LED Lighting"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: template
+    id: local_co2_alert_enabled
+    name: "CO2 LED Warning"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+number:
+  - platform: template
+    id: local_co2_warning_ppm
+    name: "CO2 Warning Threshold"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 1000
+    min_value: 600
+    max_value: 3000
+    step: 50
+    unit_of_measurement: "ppm"
+    mode: box
+
+  - platform: template
+    id: local_co2_critical_ppm
+    name: "CO2 Critical Threshold"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 1500
+    min_value: 800
+    max_value: 5000
+    step: 50
+    unit_of_measurement: "ppm"
+    mode: box
+
+  - platform: template
+    id: local_co2_alert_cooldown_minutes
+    name: "CO2 Alert Cooldown"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 5
+    min_value: 1
+    max_value: 60
+    step: 1
+    unit_of_measurement: "min"
+    mode: box
+
+time:
+  - platform: sntp
+    id: local_led_time
+    timezone: "Europe/Amsterdam"
+    servers:
+      - "pool.ntp.org"
+      - "time.google.com"
+
+script:
+  - id: local_flash_co2_alert
+    mode: single
+    parameters:
+      critical: bool
+    then:
+      - lambda: "id(local_co2_alert_active) = true;"
+      - lambda: |-
+          id(local_co2_alert_color) = critical ? 2 : 1;
+      - repeat:
+          count: 3
+          then:
+            - if:
+                condition:
+                  lambda: "return id(local_co2_alert_enabled).state;"
+                then:
+                  - light.turn_on:
+                      id: status_led
+                      brightness: 100%
+                      red: !lambda "return critical ? 1.0f : 1.0f;"
+                      green: !lambda "return critical ? 0.0f : 0.35f;"
+                      blue: 0%
+            - delay: 250ms
+            - light.turn_off: status_led
+            - delay: 250ms
+      - lambda: "id(local_co2_alert_active) = false;"
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (!id(startup_complete) || !id(local_led_enabled).state) {
+            id(local_co2_alert_phase) = 0;
+            id(local_co2_alert_active) = false;
+            if (id(local_led_runtime_state) != 0) {
+              id(status_led).turn_off().perform();
+              id(local_led_runtime_state) = 0;
+            }
+            return;
+          }
+
+          if (id(local_co2_alert_active)) {
+            return;
+          }
+
+          const bool valid = id(scd41_co2).has_state() && !isnan(id(scd41_co2).state);
+          const bool warning = valid && id(scd41_co2).state >= id(local_co2_warning_ppm).state;
+          const bool critical = valid && id(scd41_co2).state >= id(local_co2_critical_ppm).state;
+          const uint32_t cooldown = (uint32_t) id(local_co2_alert_cooldown_minutes).state * 60000UL;
+
+          if (!warning || !id(local_co2_alert_enabled).state) {
+            id(local_co2_alert_phase) = 0;
+          } else if (id(local_co2_alert_phase) == 0
+              && (id(local_co2_alert_until) == 0 || millis() - id(local_co2_alert_until) >= cooldown)) {
+            id(local_co2_alert_phase) = critical ? 2 : 1;
+            id(local_co2_alert_until) = millis();
+            id(local_flash_co2_alert).execute(critical);
+            return;
+          }
+
+          // No presence sensor exists in this variant; the LED remains off
+          // between CO2 alert bursts.
+          if (id(local_co2_alert_phase) == 0 && id(local_led_runtime_state) != 0) {
+            id(status_led).turn_off().perform();
+            id(local_led_runtime_state) = 0;
+          }

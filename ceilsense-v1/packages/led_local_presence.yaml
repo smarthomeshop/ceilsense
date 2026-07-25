@@ -1,0 +1,146 @@
+# Local LED control for non-cloud variants with a presence radar.
+
+globals:
+  - id: local_led_runtime_state
+    type: int
+    restore_value: no
+    initial_value: "-1"
+
+switch:
+  - platform: template
+    id: local_led_enabled
+    name: "LED Lighting"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: template
+    id: local_motion_light_enabled
+    name: "Motion Light"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: template
+    id: local_night_light_enabled
+    name: "Night Light"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+number:
+  - platform: template
+    id: local_motion_light_brightness
+    name: "Motion Light Brightness"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 70
+    min_value: 1
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  - platform: template
+    id: local_night_light_brightness
+    name: "Night Light Brightness"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    min_value: 1
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  - platform: template
+    id: local_night_light_start_hour
+    name: "Night Light Start Hour"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 22
+    min_value: 0
+    max_value: 23
+    step: 1
+    unit_of_measurement: "h"
+    mode: box
+
+  - platform: template
+    id: local_night_light_end_hour
+    name: "Night Light End Hour"
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    initial_value: 7
+    min_value: 0
+    max_value: 23
+    step: 1
+    unit_of_measurement: "h"
+    mode: box
+
+time:
+  - platform: sntp
+    id: local_led_time
+    timezone: "Europe/Amsterdam"
+    servers:
+      - "pool.ntp.org"
+      - "time.google.com"
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (!id(startup_complete) || !id(local_led_enabled).state) {
+            if (id(local_led_runtime_state) != 0) {
+              id(status_led).turn_off().perform();
+              id(local_led_runtime_state) = 0;
+            }
+            return;
+          }
+
+          const bool moving = id(moving_target).state;
+          const bool presence = id(presence).state;
+          const auto now = id(local_led_time).now();
+          bool night = false;
+
+          if (now.is_valid()) {
+            const int hour = now.hour;
+            const int start = (int) id(local_night_light_start_hour).state;
+            const int end = (int) id(local_night_light_end_hour).state;
+            night = start == end
+              || (start < end && hour >= start && hour < end)
+              || (start > end && (hour >= start || hour < end));
+          }
+
+          // Moving light has priority over night light.
+          if (moving && id(local_motion_light_enabled).state) {
+            if (id(local_led_runtime_state) != 2) {
+              auto call = id(status_led).turn_on();
+              call.set_brightness(id(local_motion_light_brightness).state / 100.0f);
+              call.set_rgb(1.0f, 1.0f, 1.0f);
+              call.set_effect("none");
+              call.perform();
+              id(local_led_runtime_state) = 2;
+            }
+            return;
+          }
+
+          if (presence && night && id(local_night_light_enabled).state) {
+            if (id(local_led_runtime_state) != 1) {
+              auto call = id(status_led).turn_on();
+              call.set_brightness(id(local_night_light_brightness).state / 100.0f);
+              call.set_rgb(1.0f, 0.45f, 0.08f);
+              call.set_effect("none");
+              call.perform();
+              id(local_led_runtime_state) = 1;
+            }
+            return;
+          }
+
+          if (id(local_led_runtime_state) != 0) {
+            id(status_led).turn_off().perform();
+            id(local_led_runtime_state) = 0;
+          }
