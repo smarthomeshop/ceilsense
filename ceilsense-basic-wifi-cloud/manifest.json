@@ -2,7 +2,7 @@
   "chipFamily": "ESP32-S3",
   "ota": {
     "path": "ceilsense-esp32s3.ota.bin",
-    "md5": "ad7a5b7f15159f6f179eca7fc0aa1b31"
+    "md5": "a72d92c7446fa96435511d2ead8983c6"
   },
   "parts": [
     {
