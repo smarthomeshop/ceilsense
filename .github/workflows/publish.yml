@@ -143,7 +143,24 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          V1_CHANGED=$(echo "$CHANGED_FILES" | grep -Eq '^ceilsense-v1/.*\.ya?ml$' && echo "true" || echo "false")
+          V1_YAML_CHANGED=$(echo "$CHANGED_FILES" | grep -Eq '^ceilsense-v1/.*\.ya?ml$' && echo "true" || echo "false")
+          CHANGELOG_RELEASE_READY="false"
+
+          if echo "$CHANGED_FILES" | grep -qx 'CHANGELOG.md'; then
+            unreleased_notes=$(awk '
+              $0 == "## [Unreleased]" { found=1; next }
+              found && /^## \[/ { exit }
+              found { print }
+            ' CHANGELOG.md \
+              | sed '/^- Add customer-facing firmware notes here before merging a PR\.$/d' \
+              | sed '/^- Add customer-facing changes here before the next release is published\.$/d')
+
+            if grep -q '[^[:space:]]' <<< "$unreleased_notes"; then
+              CHANGELOG_RELEASE_READY="true"
+            fi
+          fi
+
+          V1_CHANGED=$([[ "$V1_YAML_CHANGED" == "true" || "$CHANGELOG_RELEASE_READY" == "true" ]] && echo "true" || echo "false")
           WORKFLOW_CHANGED=$(echo "$CHANGED_FILES" | grep -Eq '^\.github/' && echo "true" || echo "false")
 
           echo "v1=$V1_CHANGED" >> "$GITHUB_OUTPUT"
