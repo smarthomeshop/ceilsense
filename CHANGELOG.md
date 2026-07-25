@@ -8,6 +8,7 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 - Added the LED lighting feature to all CeilSense firmware families. Variants with a presence radar now provide Motion Light and Night Light controls, while Complete variants also provide CO2 warning and critical alerts.
 - Non-cloud variants now keep the same LED priority and behavior locally through ESPHome or Home Assistant; cloud variants continue to receive the configuration from SmartHomeShop Cloud.
+- Fixed the local LED package for current ESPHome builds so all non-cloud variants compile successfully.
 
 ## [CeilSense V1 1.32] - 2026-07-24
 

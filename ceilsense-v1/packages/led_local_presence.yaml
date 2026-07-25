@@ -102,7 +102,7 @@ interval:
           }
 
           const bool moving = id(moving_target).state;
-          const bool presence = id(presence).state;
+          const bool has_presence = id(presence).state;
           const auto now = id(local_led_time).now();
           bool night = false;
 
@@ -128,7 +128,7 @@ interval:
             return;
           }
 
-          if (presence && night && id(local_night_light_enabled).state) {
+          if (has_presence && night && id(local_night_light_enabled).state) {
             if (id(local_led_runtime_state) != 1) {
               auto call = id(status_led).turn_on();
               call.set_brightness(id(local_night_light_brightness).state / 100.0f);
