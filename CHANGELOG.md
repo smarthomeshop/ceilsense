@@ -6,8 +6,13 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Automatic LED lighting is now disabled by default for new and updated CeilSense firmware. Motion Light, Night Light, and CO2 LED alerts must be enabled explicitly; saved user settings are preserved.
 - Add customer-facing firmware notes here before merging a PR.
+
+## [CeilSense V1 1.34] - 2026-07-26
+
+
+- Automatic LED lighting is now disabled by default for new and updated CeilSense firmware. Motion Light, Night Light, and CO2 LED alerts must be enabled explicitly; saved user settings are preserved.
+
 
 ## [CeilSense V1 1.33] - 2026-07-25
 
