@@ -12,21 +12,21 @@ switch:
     name: "LED Lighting"
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: template
     id: local_motion_light_enabled
     name: "Motion Light"
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: template
     id: local_night_light_enabled
     name: "Night Light"
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
 number:
   - platform: template

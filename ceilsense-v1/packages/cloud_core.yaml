@@ -129,11 +129,11 @@ globals:
   - id: cloud_led_enabled
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: "false"
   - id: cloud_motion_light_enabled
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: "false"
   - id: cloud_motion_light_brightness
     type: int
     restore_value: true
@@ -141,7 +141,7 @@ globals:
   - id: cloud_night_light_enabled
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: "false"
   - id: cloud_night_light_brightness
     type: int
     restore_value: true
@@ -157,7 +157,7 @@ globals:
   - id: cloud_co2_alert_enabled
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: "false"
   - id: cloud_co2_warning_ppm
     type: int
     restore_value: true

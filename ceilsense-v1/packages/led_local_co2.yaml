@@ -28,14 +28,14 @@ switch:
     name: "LED Lighting"
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: template
     id: local_co2_alert_enabled
     name: "CO2 LED Warning"
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
 number:
   - platform: template
