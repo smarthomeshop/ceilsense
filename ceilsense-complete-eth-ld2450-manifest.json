@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Complete Ethernet LD2450",
-  "version": "1.34",
+  "version": "1.35",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-complete-eth-ld2450/ceilsense-esp32s3.ota.bin",
-        "md5": "f5c6ee8341c63a19c2f398a1a8878c81"
+        "md5": "25fed30b721febe5cf75aba191404ea7"
       },
       "parts": [
         {
