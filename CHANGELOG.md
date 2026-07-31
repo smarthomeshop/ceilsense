@@ -6,11 +6,16 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Add customer-facing firmware notes here before merging a PR.
+
+## [CeilSense V1 1.35] - 2026-07-31
+
+
 - Added explicit ceiling-mount metadata for LD2450 variants so Room Designer
   and other integrations can identify the mounting model without relying only
   on the CeilSense device name.
 
-- Add customer-facing firmware notes here before merging a PR.
+
 
 ## [CeilSense V1 1.34] - 2026-07-26
 
