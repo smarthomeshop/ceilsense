@@ -6,10 +6,10 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
+- Pinned radar mounting metadata to stable release `v1.0.0`; static Room
+  Builder profile entities now publish once at startup without polling.
 
 ## [CeilSense V1 1.36] - 2026-08-01
-
 
 - Moved ceiling mounting, coordinate projection and radar metadata to the
   universal SmartHomeShop radar-mounting profiles. Future ceiling products can

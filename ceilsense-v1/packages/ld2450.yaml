@@ -22,5 +22,5 @@ substitutions:
 packages:
   shared_ceilsense_ld2450: github://smarthomeshop/ld2450/packages/ld2450-ceilsense.yaml@main
   shared_ld2450_zones: github://smarthomeshop/ld2450/packages/ld2450-polygon-zones.yaml@main
-  radar_mounting: github://smarthomeshop/radar-mounting/packages/mounting/ceiling.yaml@main
-  radar_profile: github://smarthomeshop/radar-mounting/packages/radars/ld2450.yaml@main
+  radar_mounting: github://smarthomeshop/radar-mounting/packages/mounting/ceiling.yaml@v1.0.0
+  radar_profile: github://smarthomeshop/radar-mounting/packages/radars/ld2450.yaml@v1.0.0
