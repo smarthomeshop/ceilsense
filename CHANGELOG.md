@@ -6,9 +6,15 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Add customer-facing firmware notes here before merging a PR.
+
+## [CeilSense V1 1.36] - 2026-08-01
+
+
 - Moved ceiling mounting, coordinate projection and radar metadata to the
   universal SmartHomeShop radar-mounting profiles. Future ceiling products can
   use the same contract with LD2450, LD2460 or LD6002B hardware.
+
 
 ## [CeilSense V1 1.35] - 2026-07-31
 
