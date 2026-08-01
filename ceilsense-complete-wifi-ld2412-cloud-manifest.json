@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Complete WiFi LD2412 Cloud",
-  "version": "1.35",
+  "version": "1.36",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-complete-wifi-ld2412-cloud/ceilsense-esp32s3.ota.bin",
-        "md5": "fcf0a0243147444ada0273be850bcee7"
+        "md5": "cc22dd3c41f5e898f465739e33d94558"
       },
       "parts": [
         {
