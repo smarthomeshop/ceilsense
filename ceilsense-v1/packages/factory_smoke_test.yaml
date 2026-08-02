@@ -1,0 +1,125 @@
+# Lightweight post-flash hardware test for the SmartHomeShop web installer.
+# The normal ESPHome logger carries versioned JSON messages over the existing
+# USB-UART connection; no extra network service or resident test component is
+# added to the firmware.
+
+globals:
+  - id: shs_test_ld2412_done
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: shs_test_scd41_done
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: shs_test_bh1750_done
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: shs_test_bmp3xx_done
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: shs_test_failed
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+esphome:
+  on_boot:
+    - priority: 595
+      then:
+        - lambda: |-
+            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"begin\",\"profile\":\"ceilsense-v1-complete-wifi-ld2412\",\"timeout\":18,\"tests\":[\"firmware\",\"ld2412\",\"scd41\",\"bh1750\",\"bmp3xx\"]}");
+            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"firmware\",\"status\":\"pass\",\"detail\":\"CeilSense firmware started\"}");
+
+    - priority: 585
+      then:
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() &&
+                       std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            timeout: 12s
+        - if:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() &&
+                       std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2412\",\"status\":\"pass\",\"detail\":\"Radar communication confirmed\"}");
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2412\",\"status\":\"fail\",\"detail\":\"No firmware response from radar\"}");
+        - lambda: id(shs_test_ld2412_done) = true;
+
+    - priority: 575
+      then:
+        - delay: 3s
+        - if:
+            condition:
+              lambda: return !id(scd41_sensor).is_failed();
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"scd41\",\"status\":\"pass\",\"detail\":\"Sensor communication confirmed\"}");
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"scd41\",\"status\":\"fail\",\"detail\":\"Sensor initialization failed\"}");
+        - lambda: id(shs_test_scd41_done) = true;
+
+    - priority: 565
+      then:
+        - delay: 1s
+        - component.update: illuminance
+        - wait_until:
+            condition:
+              lambda: return id(illuminance).has_state() && !isnan(id(illuminance).state);
+            timeout: 5s
+        - if:
+            condition:
+              lambda: return id(illuminance).has_state() && !isnan(id(illuminance).state);
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"bh1750\",\"status\":\"pass\",\"value\":%.1f,\"unit\":\"lx\"}", id(illuminance).state);
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"bh1750\",\"status\":\"fail\",\"detail\":\"No illuminance measurement\"}");
+        - lambda: id(shs_test_bh1750_done) = true;
+
+    - priority: 555
+      then:
+        - delay: 1s
+        - component.update: bmp3xx_sensor
+        - wait_until:
+            condition:
+              lambda: return id(bmp_pressure).has_state() && !isnan(id(bmp_pressure).state);
+            timeout: 5s
+        - if:
+            condition:
+              lambda: return id(bmp_pressure).has_state() && !isnan(id(bmp_pressure).state);
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"bmp3xx\",\"status\":\"pass\",\"value\":%.1f,\"unit\":\"hPa\"}", id(bmp_pressure).state);
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"bmp3xx\",\"status\":\"fail\",\"detail\":\"No pressure measurement\"}");
+        - lambda: id(shs_test_bmp3xx_done) = true;
+
+    - priority: 500
+      then:
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(shs_test_ld2412_done) && id(shs_test_scd41_done) &&
+                       id(shs_test_bh1750_done) && id(shs_test_bmp3xx_done);
+            timeout: 16s
+        - lambda: |-
+            const bool finished = id(shs_test_ld2412_done) && id(shs_test_scd41_done) &&
+                                  id(shs_test_bh1750_done) && id(shs_test_bmp3xx_done);
+            const bool passed = finished && !id(shs_test_failed);
+            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"result\",\"status\":\"%s\"}", passed ? "pass" : "fail");

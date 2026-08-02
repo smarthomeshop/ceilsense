@@ -303,6 +303,7 @@ sensor:
     address: 0x23
     update_interval: 60s
   - platform: bmp3xx_i2c
+    id: bmp3xx_sensor
     temperature:
       name: "BMP3xx Temperature"
       id: bmp_temperature
