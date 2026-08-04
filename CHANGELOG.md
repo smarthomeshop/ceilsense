@@ -6,8 +6,14 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
+- Add customer-facing firmware notes here before merging a PR.
+
+## [CeilSense V1 1.38] - 2026-08-04
+
+
 - Added guided post-install hardware checks when flashing supported CeilSense
   variants through the SmartHomeShop website, for both local and cloud firmware.
+
 
 ## [CeilSense V1 1.37] - 2026-08-01
 
