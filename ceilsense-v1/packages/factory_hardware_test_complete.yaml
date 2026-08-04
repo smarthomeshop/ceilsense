@@ -1,0 +1,16 @@
+esphome:
+  on_boot:
+    - priority: 580
+      then:
+        - delay: 3s
+        - if:
+            condition:
+              lambda: return !id(scd41_sensor).is_failed();
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"scd41\",\"status\":\"pass\",\"detail\":\"Sensor communication initialized\"}");
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"scd41\",\"status\":\"fail\",\"detail\":\"Sensor initialization failed\"}");
+        - lambda: id(shs_test_scd41_done) = true;

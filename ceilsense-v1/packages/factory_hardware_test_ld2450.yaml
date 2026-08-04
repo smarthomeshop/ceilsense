@@ -1,0 +1,19 @@
+esphome:
+  on_boot:
+    - priority: 585
+      then:
+        - wait_until:
+            condition:
+              lambda: return id(target_count).has_state() && !isnan(id(target_count).state);
+            timeout: 12s
+        - if:
+            condition:
+              lambda: return id(target_count).has_state() && !isnan(id(target_count).state);
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2450\",\"status\":\"pass\",\"detail\":\"Tracking data received\"}");
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2450\",\"status\":\"fail\",\"detail\":\"No tracking data received\"}");
+        - lambda: id(shs_test_radar_done) = true;

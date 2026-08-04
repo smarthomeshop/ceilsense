@@ -1,0 +1,11 @@
+substitutions:
+  build_variant: "factory-ceilsense-basic-eth"
+  factory_test_profile: "ceilsense-v1-basic-eth"
+  factory_test_definitions: '{\"id\":\"firmware\",\"label\":\"Firmware startup\"},{\"id\":\"bh1750\",\"label\":\"BH1750 light sensor\"},{\"id\":\"bmp3xx\",\"label\":\"BMP3xx pressure sensor\"},{\"id\":\"network\",\"label\":\"Ethernet interface\"},{\"id\":\"status_led\",\"label\":\"Status LED ring\"}'
+  factory_test_network_detail: "Not tested - verify when Ethernet is connected"
+
+packages:
+  product: !include ceilsense-basic-eth.yaml
+  factory_hardware_test: !include packages/factory_hardware_test.yaml
+  factory_hardware_radar: !include packages/factory_hardware_test_no_radar.yaml
+  factory_hardware_scd41: !include packages/factory_hardware_test_basic.yaml

@@ -1,0 +1,5 @@
+esphome:
+  on_boot:
+    - priority: 580
+      then:
+        - lambda: id(shs_test_scd41_done) = true;

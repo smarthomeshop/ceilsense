@@ -1,0 +1,11 @@
+substitutions:
+  build_variant: "factory-ceilsense-basic-wifi-ld2412-cloud"
+  factory_test_profile: "ceilsense-v1-basic-wifi-ld2412-cloud"
+  factory_test_definitions: '{\"id\":\"firmware\",\"label\":\"Firmware startup\"},{\"id\":\"ld2412\",\"label\":\"LD2412 radar\"},{\"id\":\"bh1750\",\"label\":\"BH1750 light sensor\"},{\"id\":\"bmp3xx\",\"label\":\"BMP3xx pressure sensor\"},{\"id\":\"network\",\"label\":\"WiFi interface\"},{\"id\":\"status_led\",\"label\":\"Status LED ring\"}'
+  factory_test_network_detail: "Not tested - verify when WiFi is configured"
+
+packages:
+  product: !include ceilsense-basic-wifi-ld2412-cloud.yaml
+  factory_hardware_test: !include packages/factory_hardware_test.yaml
+  factory_hardware_radar: !include packages/factory_hardware_test_ld2412.yaml
+  factory_hardware_scd41: !include packages/factory_hardware_test_basic.yaml

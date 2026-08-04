@@ -1,0 +1,5 @@
+esphome:
+  on_boot:
+    - priority: 585
+      then:
+        - lambda: id(shs_test_radar_done) = true;

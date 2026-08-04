@@ -1,0 +1,23 @@
+esphome:
+  on_boot:
+    - priority: 585
+      then:
+        - wait_until:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() &&
+                       std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            timeout: 12s
+        - if:
+            condition:
+              lambda: |-
+                return id(ld2412_fm_version).has_state() &&
+                       std::string(id(ld2412_fm_version).state.c_str()) != "unknown";
+            then:
+              - lambda: |-
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2412\",\"status\":\"pass\",\"detail\":\"Radar communication confirmed\"}");
+            else:
+              - lambda: |-
+                  id(shs_test_failed) = true;
+                  ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"ld2412\",\"status\":\"fail\",\"detail\":\"No firmware response from radar\"}");
+        - lambda: id(shs_test_radar_done) = true;

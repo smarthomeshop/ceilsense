@@ -306,7 +306,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-factory-hardware-test.yaml
       name: CeilSense Basic WiFi
       clean: false
       esphome_version: latest
@@ -320,7 +320,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi-ld2412.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2412-factory-hardware-test.yaml
       name: CeilSense Basic WiFi LD2412
       clean: false
       esphome_version: latest
@@ -334,7 +334,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-cloud-factory-hardware-test.yaml
       name: CeilSense Basic WiFi Cloud
       clean: false
       esphome_version: latest
@@ -362,7 +362,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet
       clean: false
       esphome_version: latest
@@ -376,7 +376,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-cloud-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet Cloud
       clean: false
       esphome_version: latest
@@ -390,7 +390,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth-ld2412.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-ld2412-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet LD2412
       clean: false
       esphome_version: latest
@@ -404,7 +404,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi-ld2412-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2412-cloud-factory-hardware-test.yaml
       name: CeilSense Basic WiFi LD2412 Cloud
       clean: false
       esphome_version: latest
@@ -418,7 +418,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth-ld2412-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-ld2412-cloud-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet LD2412 Cloud
       clean: false
       esphome_version: latest
@@ -432,7 +432,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-factory-hardware-test.yaml
       name: CeilSense Complete WiFi
       clean: false
       esphome_version: latest
@@ -446,7 +446,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-cloud-factory-hardware-test.yaml
       name: CeilSense Complete WiFi Cloud
       clean: false
       esphome_version: latest
@@ -460,7 +460,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi-ld2412.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2412-factory-hardware-test.yaml
       name: CeilSense Complete WiFi LD2412
       clean: false
       esphome_version: latest
@@ -474,7 +474,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi-ld2412-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2412-cloud-factory-hardware-test.yaml
       name: CeilSense Complete WiFi LD2412 Cloud
       clean: false
       esphome_version: latest
@@ -488,7 +488,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet
       clean: false
       esphome_version: latest
@@ -502,7 +502,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-cloud-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet Cloud
       clean: false
       esphome_version: latest
@@ -516,7 +516,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth-ld2412.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-ld2412-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet LD2412
       clean: false
       esphome_version: latest
@@ -530,7 +530,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth-ld2412-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-ld2412-cloud-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet LD2412 Cloud
       clean: false
       esphome_version: latest
@@ -544,7 +544,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi-ld2450.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2450-factory-hardware-test.yaml
       name: CeilSense Basic WiFi LD2450
       clean: false
       esphome_version: latest
@@ -558,7 +558,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-wifi-ld2450-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-wifi-ld2450-cloud-factory-hardware-test.yaml
       name: CeilSense Basic WiFi LD2450 Cloud
       clean: false
       esphome_version: latest
@@ -572,7 +572,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth-ld2450.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-ld2450-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet LD2450
       clean: false
       esphome_version: latest
@@ -586,7 +586,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-basic-eth-ld2450-cloud.yaml
+      files: ceilsense-v1/ceilsense-basic-eth-ld2450-cloud-factory-hardware-test.yaml
       name: CeilSense Basic Ethernet LD2450 Cloud
       clean: false
       esphome_version: latest
@@ -600,7 +600,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi-ld2450.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2450-factory-hardware-test.yaml
       name: CeilSense Complete WiFi LD2450
       clean: false
       esphome_version: latest
@@ -614,7 +614,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-wifi-ld2450-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-wifi-ld2450-cloud-factory-hardware-test.yaml
       name: CeilSense Complete WiFi LD2450 Cloud
       clean: false
       esphome_version: latest
@@ -628,7 +628,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth-ld2450.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-ld2450-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet LD2450
       clean: false
       esphome_version: latest
@@ -642,7 +642,7 @@ jobs:
     if: needs.detect-changes.outputs.v1_build == 'true'
     uses: ./.github/workflows/esphome-build.yml
     with:
-      files: ceilsense-v1/ceilsense-complete-eth-ld2450-cloud.yaml
+      files: ceilsense-v1/ceilsense-complete-eth-ld2450-cloud-factory-hardware-test.yaml
       name: CeilSense Complete Ethernet LD2450 Cloud
       clean: false
       esphome_version: latest
