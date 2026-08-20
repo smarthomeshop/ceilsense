@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-complete-wifi-cloud/ceilsense-esp32s3.ota.bin",
-        "md5": "f7d3c4e9ba6678a18c1283e8170f2b3d"
+        "md5": "0d92915b98ee65c48d507cd24be8996a"
       },
       "parts": [
         {
