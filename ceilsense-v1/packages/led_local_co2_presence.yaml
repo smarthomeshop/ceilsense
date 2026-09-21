@@ -1,3 +1,6 @@
+substitutions:
+  led_test_busy_expression: "id(local_co2_alert_active)"
+
 # Local LED control for non-cloud Complete variants with SCD4x and radar.
 
 globals:
@@ -164,7 +167,7 @@ interval:
     then:
       - lambda: |-
           // The boot self-test owns the ring until its final indication ends.
-          if (!id(startup_complete)) {
+          if (!id(startup_complete) || id(shs_serial).is_running()) {
             return;
           }
 

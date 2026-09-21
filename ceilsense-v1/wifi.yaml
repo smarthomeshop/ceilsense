@@ -19,7 +19,12 @@ esp32_improv:
   authorizer: none
   next_url: "https://api.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
 improv_serial:
+  id: provisioning_serial
   next_url: "https://api.smarthomeshop.io/setup/welcome?device={{device_name}}&ip={{ip_address}}&cloud=${cloud_enabled}&hw=${ceilsense_hardware_version}"
+
+# Route Improv and manual hardware-test commands through one UART reader.
+shs_test_serial:
+  improv_serial_id: provisioning_serial
 
 # Diagnostics (for onboarding URL params)
 text_sensor:

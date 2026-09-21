@@ -29,7 +29,7 @@ binary_sensor:
       on_press:
         - if:
             condition:
-              switch.is_on: debug_mode
+              lambda: return id(debug_mode).state && !id(shs_serial).is_running();
             then:
               - light.turn_on:
                   id: status_led
@@ -38,7 +38,7 @@ binary_sensor:
       on_release:
         - if:
             condition:
-              switch.is_on: debug_mode
+              lambda: return id(debug_mode).state && !id(shs_serial).is_running();
             then:
               - light.turn_off: status_led
     has_moving_target:

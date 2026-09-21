@@ -83,7 +83,7 @@ esphome:
       then:
         - lambda: |-
             ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"network\",\"status\":\"skip\",\"detail\":\"${factory_test_network_detail}\"}");
-            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"status_led\",\"status\":\"skip\",\"detail\":\"Manual check - enable Startup LED Self-Test and restart to inspect the LED ring\"}");
+            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"status_led\",\"status\":\"skip\",\"detail\":\"Manual check - run the rainbow LED test and confirm visually\"}");
             id(shs_test_manual_done) = true;
 
     - priority: 500

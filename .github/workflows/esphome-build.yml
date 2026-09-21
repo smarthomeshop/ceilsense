@@ -93,6 +93,9 @@ jobs:
           if grep -q "project_version:" "${{ matrix.file }}"; then
             sed -i "s/^\s*project_version: \".*\"/  project_version: \"${VERSION}\"/" "${{ matrix.file }}"
           fi
+      - name: Use serial test component from this checkout
+        run: |
+          sed -i 's|^  shs_test_component_source:.*|  shs_test_component_source: "../components"|' "${{ inputs.base_path }}/base.yaml"
       - name: Create dummy secrets for build
         shell: bash
         run: |

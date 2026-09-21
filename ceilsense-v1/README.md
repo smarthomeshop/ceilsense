@@ -10,8 +10,11 @@ indication on subsequent starts. The setting is saved across restarts and normal
 firmware updates. An installation that erases device settings resets it to off.
 
 Sensor checks and the website's post-flash hardware-test reports run independently
-of this switch. The LED ring itself requires a visual check: enable the switch
-and restart the device. Normal motion, night-light and CO₂ LED settings remain
+of this switch. The installer can request a temporary eight-second rainbow test
+over USB, even with the startup test disabled. The test restores the previous LED
+state and still requires visual confirmation. The website integration contract
+is in [the LED test protocol](../docs/web-led-test-protocol.md).
+Normal motion, night-light and CO₂ LED settings remain
 separate, off by default, and retain saved choices.
 
 ## Variant naming

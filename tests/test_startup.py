@@ -69,6 +69,9 @@ class StartupTests(unittest.TestCase):
                 for key, value in substitutions.items():
                     message = message.replace("${" + key + "}", value)
                 payload = json.loads(message.removeprefix("SHS_TEST/1 "))
+                # Leave room for the timestamp, tag, ANSI escapes and terminator.
+                log_buffer_size = int(read_config(ROOT / "base.yaml")["logger"]["tx_buffer_size"])
+                self.assertLess(len(message.encode()) + 80, log_buffer_size)
                 self.assertEqual(payload["type"], "begin")
                 self.assertEqual(payload["profile"], substitutions["factory_test_profile"])
                 expected = {"firmware", "bh1750", "bmp3xx", "network", "status_led"}
@@ -105,6 +108,7 @@ struct Time { int hour = 12; bool is_valid() const { return true; } };
 struct Entity {
   float state = 0;
   bool has_state() { return true; }
+  bool is_running() { return state != 0; }
   Time now() { return {}; }
   void execute(bool) {}
 };
@@ -132,6 +136,10 @@ int main() {
     assert(local_led_runtime_state == -1);
   }
   startup_complete = true;
+  shs_serial.state = 1;
+  tick();
+  assert(status_led.calls == 0);
+  shs_serial.state = 0;
   local_led_enabled.state = false;
   tick();
   assert(status_led.calls == 1);
