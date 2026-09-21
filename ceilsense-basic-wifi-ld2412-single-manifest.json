@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Basic WiFi LD2412 Single",
-  "version": "1.38",
+  "version": "1.39",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-basic-wifi-ld2412-single/ceilsense-esp32s3.ota.bin",
-        "md5": "fc634f79395fa494e623c853cdc1a00a"
+        "md5": "059bb27cd421076cb4a3dd3dc16f365a"
       },
       "parts": [
         {
