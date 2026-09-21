@@ -6,16 +6,11 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
-
-## [CeilSense V1 1.40] - 2026-09-21
-
-
 - Added a temporary eight-second rainbow LED test that the web installer can
   request over USB, without changing saved LED settings.
 - Added capability discovery and correlated start/completion messages for the
   installer, while keeping USB Wi-Fi provisioning available.
-
+- Kept legacy single-file firmware compatible with the shared LED controls.
 
 ## [CeilSense V1 1.39] - 2026-09-21
 

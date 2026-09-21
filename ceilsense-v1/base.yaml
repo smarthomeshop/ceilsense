@@ -2,6 +2,7 @@
 
 substitutions:
   shs_test_component_source: "github://smarthomeshop/ceilsense@main"
+  led_test_running_expression: "id(shs_serial).is_running()"
   led_test_busy_expression: "false"
   wifi_fast_connect: "true"
   device_name: "ceilsense"

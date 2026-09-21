@@ -93,6 +93,8 @@ class StartupTests(unittest.TestCase):
         for path in sorted((ROOT / "packages").glob("led_local_*.yaml")):
             with self.subTest(package=path.name), tempfile.TemporaryDirectory() as temp:
                 body = read_config(path)["interval"][0]["then"][0]["lambda"]
+                expression = read_config(ROOT / "base.yaml")["substitutions"]["led_test_running_expression"]
+                body = body.replace("${led_test_running_expression}", expression)
                 names = set(re.findall(r"id\((\w+)\)", body))
                 special = {"startup_complete", "local_led_runtime_state",
                            "local_co2_alert_active", "local_co2_alert_phase",

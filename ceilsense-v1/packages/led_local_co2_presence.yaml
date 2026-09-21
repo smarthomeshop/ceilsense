@@ -167,7 +167,7 @@ interval:
     then:
       - lambda: |-
           // The boot self-test owns the ring until its final indication ends.
-          if (!id(startup_complete) || id(shs_serial).is_running()) {
+          if (!id(startup_complete) || ${led_test_running_expression}) {
             return;
           }
 

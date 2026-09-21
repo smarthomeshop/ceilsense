@@ -2,6 +2,7 @@
 # CeilSense v1 - Complete WiFi + LD2412 + SCD4x (single file build)
 
 substitutions:
+  led_test_running_expression: "false"
   # Variant identifiers
   device_name: ceilsense
   friendly_name: "CeilSense"
