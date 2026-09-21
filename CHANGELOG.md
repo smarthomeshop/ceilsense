@@ -6,7 +6,10 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
+- Startup LED self-test is now off by default, with a saved opt-in switch. When
+  enabled, local LED controls no longer interrupt it after one second.
+- Corrected web hardware-test start messages for all V1 variants; these checks
+  remain available independently of the startup LED setting.
 
 ## [CeilSense V1 1.38] - 2026-08-04
 

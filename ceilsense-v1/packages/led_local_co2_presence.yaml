@@ -163,7 +163,12 @@ interval:
   - interval: 1s
     then:
       - lambda: |-
-          if (!id(startup_complete) || !id(local_led_enabled).state) {
+          // The boot self-test owns the ring until its final indication ends.
+          if (!id(startup_complete)) {
+            return;
+          }
+
+          if (!id(local_led_enabled).state) {
             id(local_co2_alert_active) = false;
             if (id(local_led_runtime_state) != 0) {
               id(status_led).turn_off().perform();

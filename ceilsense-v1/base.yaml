@@ -69,35 +69,40 @@ esphome:
                 const bool scd4x_ok = !id(scd4x_required) || id(scd4x_checked);
                 return ld2412_ok && ld2450_ok && scd4x_ok;
             timeout: 120s
-        - light.turn_off: status_led
+        # Visual self-test is opt-in; sensor checks still run when LEDs are off.
         - if:
             condition:
-              lambda: |-
-                return !id(startup_failed);
+              switch.is_on: startup_led_test_enabled
             then:
-              - light.turn_on:
-                  id: status_led
-                  brightness: 100%
-                  red: 100%
-                  green: 100%
-                  blue: 100%
-                  transition_length: 1s
-              - delay: 3s
-              - light.turn_off:
-                  id: status_led
-                  transition_length: 1s
-            else:
-              - light.turn_on:
-                  id: status_led
-                  brightness: 100%
-                  red: 100%
-                  green: 0%
-                  blue: 0%
-                  transition_length: 200ms
-              - delay: 20s
-              - light.turn_off:
-                  id: status_led
-                  transition_length: 300ms
+              - light.turn_off: status_led
+              - if:
+                  condition:
+                    lambda: |-
+                      return !id(startup_failed);
+                  then:
+                    - light.turn_on:
+                        id: status_led
+                        brightness: 100%
+                        red: 100%
+                        green: 100%
+                        blue: 100%
+                        transition_length: 1s
+                    - delay: 3s
+                    - light.turn_off:
+                        id: status_led
+                        transition_length: 1s
+                  else:
+                    - light.turn_on:
+                        id: status_led
+                        brightness: 100%
+                        red: 100%
+                        green: 0%
+                        blue: 0%
+                        transition_length: 200ms
+                    - delay: 20s
+                    - light.turn_off:
+                        id: status_led
+                        transition_length: 300ms
         - lambda: |-
             id(startup_complete) = true;
 
@@ -315,6 +320,19 @@ sensor:
 
 # Buttons & switches
 switch:
+  - platform: template
+    name: "Startup LED Self-Test"
+    id: startup_led_test_enabled
+    entity_category: config
+    icon: mdi:led-on
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_off:
+      - if:
+          condition:
+            lambda: return !id(startup_complete);
+          then:
+            - light.turn_off: status_led
   - platform: template
     name: "LD2412 Debug Mode"
     id: debug_mode

@@ -2,6 +2,18 @@
 
 This folder contains firmware variants for CeilSense v1 hardware. All variants include the shared `base.yaml` and add either `wifi.yaml` or `eth.yaml`. Some variants add optional sensor packages.
 
+## Startup self-test and LEDs
+
+`Startup LED Self-Test` is off by default. Enable it in Home Assistant or the
+local device web interface to show the circular animation and final white/red
+indication on subsequent starts. The setting is saved across restarts and normal
+firmware updates. An installation that erases device settings resets it to off.
+
+Sensor checks and the website's post-flash hardware-test reports run independently
+of this switch. The LED ring itself requires a visual check: enable the switch
+and restart the device. Normal motion, night-light and CO₂ LED settings remain
+separate, off by default, and retain saved choices.
+
 ## Variant naming
 
 - **Basic**: Core device features with built‑in sensors from `base.yaml` (BH1750 illuminance, BMP3xx temperature/pressure), status LED, OTA, diagnostics.

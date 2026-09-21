@@ -1,6 +1,7 @@
 # Reports post-flash factory checks to the SmartHomeShop web installer.
 substitutions:
   factory_test_profile: "ceilsense-v1"
+  # Plain JSON: inserted into a C++ raw string, so quotes must not be escaped.
   factory_test_definitions: '{"id":"firmware","label":"Firmware startup"},{"id":"bh1750","label":"BH1750 light sensor"},{"id":"bmp3xx","label":"BMP3xx pressure sensor"},{"id":"network","label":"Network interface"},{"id":"status_led","label":"Status LED ring"}'
   factory_test_network_detail: "Not tested - verify during final network setup"
 
@@ -82,7 +83,7 @@ esphome:
       then:
         - lambda: |-
             ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"network\",\"status\":\"skip\",\"detail\":\"${factory_test_network_detail}\"}");
-            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"status_led\",\"status\":\"skip\",\"detail\":\"Manual check - confirm the circular LED animation is visible\"}");
+            ESP_LOGI("shs_test", "SHS_TEST/1 {\"type\":\"test\",\"id\":\"status_led\",\"status\":\"skip\",\"detail\":\"Manual check - enable Startup LED Self-Test and restart to inspect the LED ring\"}");
             id(shs_test_manual_done) = true;
 
     - priority: 500
