@@ -1,6 +1,6 @@
 {
   "name": "CeilSense Basic WiFi LD2450 Cloud",
-  "version": "1.41",
+  "version": "1.42",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "ceilsense-basic-wifi-ld2450-cloud/ceilsense-esp32s3.ota.bin",
-        "md5": "22599cf4a97e4ac18421eec285cbe0ad"
+        "md5": "f97f32807b1f4bd02f5a54993a37ca36"
       },
       "parts": [
         {
