@@ -33,6 +33,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify immutable radar dependency versions
+        run: python3 .github/scripts/check-radar-dependency-pins.py ceilsense-v1
+
       - name: Require changelog update for firmware changes
         shell: bash
         run: |
@@ -300,8 +303,8 @@ jobs:
             exit 0
           fi
 
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "info@dwain.nl"
+          git config --local user.name "dwainscheeren"
           git add CHANGELOG.md ceilsense-v1/base.yaml
           git commit -m "chore: update CeilSense V1 version to ${{ steps.versions.outputs.v1_version }} [skip ci]" || exit 0
           git push || echo "Nothing to push"

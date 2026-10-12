@@ -6,7 +6,9 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
+- Pinned the shared LD2450 radar packages to stable release `v1.0.0`, making
+  every LD2450 firmware build reproducible while including mirror-reflection
+  protection for Room Designer exclusions and people counting.
 
 ## [CeilSense V1 1.41] - 2026-09-21
 
