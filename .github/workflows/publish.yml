@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0
 
       - name: Verify immutable radar dependency versions
-        run: python3 .github/scripts/check-radar-dependency-pins.py ceilsense-v1
+        run: python3 .github/scripts/check-radar-dependency-pins.py ceilsense-v1 ceilsense-v2
 
       - name: Require changelog update for firmware changes
         shell: bash
