@@ -6,7 +6,7 @@ This changelog starts on 2026-04-15. Earlier firmware versions existed before th
 
 ## [Unreleased]
 
-- Add customer-facing firmware notes here before merging a PR.
+- Keep humidity between 0 and 100% in cloud uploads, so a humidity offset no longer makes the cloud reject the whole reading.
 
 ## [CeilSense V1 1.42] - 2026-10-12
 

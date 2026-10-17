@@ -428,7 +428,9 @@ script:
             }
 
             if (id(cloud_has_scd4x) && !isnan(id(cloud_scd4x_humidity))) {
-              root["humidity_pct"] = id(cloud_scd4x_humidity);
+              // Humidity offsets can push the value outside 0-100 %, which the API
+              // rejects together with the rest of the payload (HTTP 422).
+              root["humidity_pct"] = std::max(0.0f, std::min(100.0f, id(cloud_scd4x_humidity)));
             }
 
             if (id(cloud_has_scd4x) && !isnan(id(cloud_scd4x_co2))) {
